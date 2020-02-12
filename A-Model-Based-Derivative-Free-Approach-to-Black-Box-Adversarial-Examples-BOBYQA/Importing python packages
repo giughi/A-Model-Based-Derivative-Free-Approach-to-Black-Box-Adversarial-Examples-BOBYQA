@@ -1,0 +1,21 @@
+
+
+
+IN THE CLUSTERS
+
+To install in a specific folder
+PYTHONUSERBASE=/home/ughi/Documents/Adversarial_Attack_Git/Adversarial_Attacks/ pip3 install --user tensorflow
+
+
+
+To invoke the installation:
+
+export PATH=/home/ughi/Documents/Adversarial_Attack_Git/Adversarial_Attacks/bin/:$PATH
+export PYTHONPATH=/home/ughi/Documents/Adversarial_Attack_Git/Adversarial_Attacks/lib/python3.6/site-packages/:$PYTHONPATH
+
+
+
+make sure you use the TF/Pytorch version which supports cuda 10, the default on GPU machines here.
+
+
+
