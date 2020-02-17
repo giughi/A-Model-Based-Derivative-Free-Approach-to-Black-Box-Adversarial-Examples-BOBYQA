@@ -14,6 +14,7 @@ import pickle
 import gzip
 import pickle
 import urllib.request
+import tarfile
 
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
@@ -67,13 +68,14 @@ class CIFAR:
     def __init__(self):
         train_data = []
         train_labels = []
-        # print(main_dir)
-        # print(dir_path)
+
         if not os.path.exists(main_dir + "/Data/CIFAR-10/cifar-10-batches-bin"):
+            print('Downloading the Dataset')
             urllib.request.urlretrieve("https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz",
                                        main_dir + '/Data/CIFAR-10/cifar-data.tar.gz')
-            command = "tar -xzf " + main_dir + "/Data/CIFAR-10/cifar-data.tar.gz"
+            command = "tar -xzvf " + main_dir + "/Data/CIFAR-10/cifar-data.tar.gz -C "+ main_dir + "/Data/CIFAR-10"
             os.popen(command).read()
+
 
         for i in range(5):
             r, s = load_batch(main_dir + "/Data/CIFAR-10/cifar-10-batches-bin/data_batch_"+str(i+1)+".bin")
