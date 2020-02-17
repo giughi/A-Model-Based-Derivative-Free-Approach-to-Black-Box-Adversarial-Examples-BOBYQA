@@ -8,12 +8,20 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-tensorflow -> 1.14.3
-....
+```
+pip install -r requirements.txt 
+```
 
 ### Installing
 
 It is first required to download/train the different datasets and models that are going to be attacked.
+
+For MNIST and CIFAR
+
+```
+python train_models.py
+```
+
 
 For Inception Adversarially Trained Nets run
 
