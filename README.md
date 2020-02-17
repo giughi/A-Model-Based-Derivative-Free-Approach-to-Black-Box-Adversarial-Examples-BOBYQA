@@ -18,7 +18,7 @@ It is first required to download/train the different datasets and models that ar
 For Inception Adversarially Trained Nets run
 
 ```
-CHECKPOINT_DIR=/Models
+CHECKPOINT_DIR=./Models
 mkdir ${CHECKPOINT_DIR}
 wget http://download.tensorflow.org/models/ens_adv_inception_resnet_v2_2017_08_18.tar.gz
 tar -xvf ens_adv_inception_resnet_v2_2017_08_18.tar.gz
