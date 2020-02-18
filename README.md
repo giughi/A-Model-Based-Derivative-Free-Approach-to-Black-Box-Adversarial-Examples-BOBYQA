@@ -20,6 +20,18 @@ For MNIST and CIFAR it is necessary to run the following comand
 ```
 python Setups/Data_and_Model/train_CIFAR_MNIST_models.py
 ```
+To download the ImageNet dataset
+```
+CHECKPOINT_DIR=./Data/Imagenet
+mkdir ${CHECKPOINT_DIR}
+wget http://jaina.cs.ucdavis.edu/datasets/adv/imagenet/img.tar.gz
+tar -xvf img.tar.gz -C ./Data/Imagenet
+rm img.tar.gz
+```
+and to install the inception-v3 net 
+```
+python Setups/Data_and_Model/setup_inception.py
+```
 
 
 For Inception Adversarially Trained Nets run
