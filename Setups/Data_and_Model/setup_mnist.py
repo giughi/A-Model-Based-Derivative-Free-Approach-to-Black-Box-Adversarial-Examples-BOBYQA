@@ -42,14 +42,16 @@ def extract_labels(filename, num_images):
 class MNIST:
     def __init__(self):
         if not os.path.exists(main_dir + "/Data/MNIST/data"):
+            os.mkdir(main_dir + "/Data/MNIST")
             os.mkdir(main_dir + "/Data/MNIST/data")
+        if not os.path.exists(main_dir + "/Data/MNIST/data/train-images-idx3-ubyte.gz"):
             files = ["train-images-idx3-ubyte.gz",
                      "t10k-images-idx3-ubyte.gz",
                      "train-labels-idx1-ubyte.gz",
                      "t10k-labels-idx1-ubyte.gz"]
             for name in files:
-
-                urllib.request.urlretrieve('http://yann.lecun.com/exdb/mnist/' + name, "data/"+name)
+                print('retrieving the data')
+                urllib.request.urlretrieve('http://yann.lecun.com/exdb/mnist/' + name, main_dir + "/Data/MNIST/data/"+name)
 
         train_data = extract_data(main_dir + "/Data/MNIST/data/train-images-idx3-ubyte.gz", 60000)
         train_labels = extract_labels(main_dir + "/Data/MNIST/data/train-labels-idx1-ubyte.gz", 60000)

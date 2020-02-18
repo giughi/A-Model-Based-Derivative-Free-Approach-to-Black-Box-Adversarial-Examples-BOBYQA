@@ -111,10 +111,13 @@ def train_distillation(data, file_name, params, num_epochs=50, batch_size=128, t
 if not os.path.isdir('Models'):
     os.makedirs('Models')
 
-train(CIFAR(), main_dir + "/Models/cifar", [64, 64, 128, 128, 256, 256], num_epochs=1)
-train(MNIST(), main_dir + "/Models/mnist", [32, 32, 64, 64, 200, 200], num_epochs=1)
+if not os.path.isdir('Data'):
+    os.makedirs('Data')
+
+train(CIFAR(), main_dir + "/Models/cifar", [64, 64, 128, 128, 256, 256], num_epochs=50)
+train(MNIST(), main_dir + "/Models/mnist", [32, 32, 64, 64, 200, 200], num_epochs=50)
 
 train_distillation(MNIST(), main_dir + "/Models/mnist-distilled-100", [32, 32, 64, 64, 200, 200],
-                   num_epochs=1, train_temp=100)
+                   num_epochs=50, train_temp=100)
 train_distillation(CIFAR(), main_dir + "/Models/cifar-distilled-100", [64, 64, 128, 128, 256, 256],
-                   num_epochs=1, train_temp=100)
+                   num_epochs=50, train_temp=100)
