@@ -22,13 +22,13 @@ python Setups/Data_and_Model/train_CIFAR_MNIST_models.py
 ```
 To download the ImageNet dataset
 ```
-CHECKPOINT_DIR=./Data/Imagenet
+CHECKPOINT_DIR=./Data/ImageNet
 mkdir ${CHECKPOINT_DIR}
 wget http://jaina.cs.ucdavis.edu/datasets/adv/imagenet/img.tar.gz
-tar -xvf img.tar.gz -C ./Data/Imagenet
+tar -xvf img.tar.gz -C ./Data/ImageNet
 rm img.tar.gz
-mv ./Data/Imagenet/imgs ./Data/Imagenet/images
-rm ./Data/Imagenet/imgs
+mv ./Data/ImageNet/imgs ./Data/ImageNet/images
+rm ./Data/ImageNet/imgs
 
 ```
 and to install the inception-v3 net 

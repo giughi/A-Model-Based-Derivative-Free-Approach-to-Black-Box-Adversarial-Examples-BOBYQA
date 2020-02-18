@@ -237,7 +237,7 @@ if __name__ == '__main__':
             timeend = time.time()
             adversarial_class = np.argmax(targets[0])
 
-            adversaria# python Setups/Generation_Comparision_norm_robust.py --max_evals=1400 --attack_type=boby --dataset=mnistl_predict_gene = model.model.predict(inputs + adv_gene)
+            adversarial_predict_gene = model.model.predict(inputs + adv_gene)
             adversarial_predict_gene = np.squeeze(adversarial_predict_gene)
             adversarial_prob_gene = np.sort(adversarial_predict_gene)
             adversarial_class_gene = np.argsort(adversarial_predict_gene)

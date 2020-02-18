@@ -557,7 +557,8 @@ class BlackBox(object):
                 l, evaluations, nimg = self.blackbox_optimizer_GEN_ATTACK(step)
                 if l == -4:
                     print('The algorithm did not converge')
-                    return nimg, evaluations
+                    return nimg, evaluations, []
+                summary = []
             # print('------> The output loss is ',l)
             global_summary.append(summary)
 

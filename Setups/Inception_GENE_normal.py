@@ -29,7 +29,7 @@ main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
 flags = tf.app.flags
 flags.DEFINE_string('input_dir', '', 'Path for input images.')
 flags.DEFINE_string('output_dir', 'output', 'Path to save results.')
-flags.DEFINE_integer('test_size', 1000, 'Number of test images.')
+flags.DEFINE_integer('test_size', 300, 'Number of test images.')
 flags.DEFINE_bool('verbose', True, 'Print logs.')
 flags.DEFINE_integer('test_example', None, 'Test only one image')
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     num_valid_images = 1000#FLAGS.test_size#len(inputs)
 
-    saving_dir = main_dir+'/Results/Imagenet/GENE_'+str(FLAGS.eps)+'_2nd_500_.txt'
+    saving_dir = main_dir+'/Results/Imagenet/GENE_'+str(FLAGS.eps)+'.txt'
     already_done = 0
     if os.path.exists(saving_dir):
         if os.path.getsize(saving_dir)>0:
