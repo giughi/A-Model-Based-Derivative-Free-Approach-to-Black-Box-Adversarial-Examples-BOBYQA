@@ -16,10 +16,9 @@ pip install -r requirements.txt
 
 It is first required to download/train the different datasets and models that are going to be attacked.
 
-For MNIST and CIFAR
-
+For MNIST and CIFAR it is necessary to run the following comand
 ```
-python train_models.py
+python Setups/Data_and_Model/train_CIFAR_MNIST_models.py
 ```
 
 
