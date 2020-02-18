@@ -1,0 +1,18 @@
+scipy==0.19
+python==3.6
+tensorflow==1.14
+keras
+pandas
+
+
+
+# PYTHONUSERBASE=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA$ pip3 install --user scipy==0.19
+
+
+
+#To invoke the installation:
+
+export PATH=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/bin/:$PATH
+export PYTHONPATH=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/lib/python3.6/site-packages/:$PYTHONPATH
+
+

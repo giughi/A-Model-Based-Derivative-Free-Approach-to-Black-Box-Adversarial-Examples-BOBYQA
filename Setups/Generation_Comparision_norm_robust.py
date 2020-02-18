@@ -227,18 +227,7 @@ if __name__ == '__main__':
             if args['numimg'] == 0:
                 args['numimg'] = 20
             print('Using', args['numimg'], 'test images with ', L_inf_var,' energy')
-            # load attack module
-            # attack_rand = BlackBox_BOBYQA(sess, model, batch_size=BATCH, max_iterations=args['maxiter'], print_every=args['print_every'],
-            #               early_stop_iters=args['early_stop_iters'], confidence=0, targeted=not args['untargeted'], use_log=use_log,
-            #               use_tanh=args['use_tanh'], use_resize=args['use_resize'],L_inf=L_inf_var, rank = 3, ordered_domain=False,
-            #               image_distribution = False, mixed_distrwith open(main_dir+'/Results/Imagenet/Iterative_0.1_batch_dim_50_max_queries_1400_hier_True.txt', "rb") as fp:
-            #               image_distributions=False,max_eval = MAX_EVAL)
-            #
-            # attack_orde = BlackBox_BOBYQA(sess, model, batch_size=BATCH, max_iterations=args['maxiter'], print_every=args['print_every'],
-            #               early_stop_iters=args['early_stop_iters'], confidence=0, targeted=not args['untargeted'], use_log=use_log,
-            #               use_tanh=args['use_tanh'], use_resize=args['use_resize'],L_inf=L_inf_var, rank = 3, ordered_domain=True,
-            #               image_distribution = False, mixed_distributions=False,max_eval = MAX_EVAL)
-
+            
             
             attack_dist = BlackBox_BOBYQA(sess, model, batch_size=BATCH, max_iterations=args['maxiter'], print_every=args['print_every'],
                           early_stop_iters=args['early_stop_iters'], confidence=0, targeted=not args['untargeted'], use_log=use_log,

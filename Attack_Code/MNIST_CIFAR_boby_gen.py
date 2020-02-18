@@ -66,141 +66,6 @@ def vec2mod(c,indice,var):
         temp.reshape(-1)[indice[i]] += c[i]
     return temp
 
-def generator_rank1_img(c,img):
-    # this function returns an image tensor given the ordered vector; the
-    # first component is the rowa, the second the columns, and the third
-    # the colour pixels (if RGB this is three)
-
-    var = img.copy()
-    _,n,m,r = var.shape
-
-    for k in range(r):
-        for i in range(n):
-            for j in range(m):
-#                 print(c[i])
-                var[0,i,j,k] = c[i]*c[j+n]*c[k+n+m]
-
-    return var
-
-def generator_rankn_img(c,img,rank):
-    # this function returns an image tensor given the ordered vector; the
-    # first component is the rowa, the second the columns, and the third
-    # the colour pixels (if RGB this is three)
-
-    var = img.copy()
-    _,n,m,r = var.shape
-
-    nn = n+m+r
-
-    for rr in range(int(rank)):
-        for k in range(r):
-            for i in range(n):
-                for j in range(m):
-                    var[0,i,j,k] += c[i+nn*rr]*c[j+n+nn*rr]*c[k+n+m+nn*rr]
-
-    return var
-
-def generator_rand_gaus_img(c,img,n,M):
-    # this function returns an image tensor given the ordered vector; the
-    # first component is the rowa, the second the columns, and the third
-    # the colour pixels (if RGB this is three)
-
-    var = img.copy()
-
-    for i in range(n):
-        var[0,:,:,:] += c[i]*M[i]
-
-    return var
-
-def boundaries(a_img,b_img,x_size,y_size,chan_size):
-
-    a = np.zeros(x_size+y_size+chan_size,)
-    b = np.zeros(x_size+y_size+chan_size,)
-
-    for i in range(x_size):
-        temp_a = []#np.zeros(y_size*chan_size,)
-        temp_b = []#np.zeros(y_size*chan_size,)
-        for j in range(y_size):
-            for k in range(chan_size):
-                temp_a.append(float(a_img[i,j,k]))
-                temp_b.append(float(b_img[i,j,k]))
-        a[i] = -np.power(abs(max(temp_a)),1/3)
-        b[i] = np.power(min(temp_b),1/3)
-
-    for j in range(y_size):
-        temp_a = []#np.zeros(y_size*chan_size,)
-        temp_b = []#np.zeros(y_size*chan_size,)
-        for i in range(x_size):
-            for k in range(chan_size):
-                temp_a.append(float(a_img[i,j,k]))
-                temp_b.append(float(b_img[i,j,k]))
-
-        a[j + x_size] = -np.power(abs(max(temp_a)),1/3)
-        b[j + x_size] = np.power(min(temp_b),1/3)
-
-    for k in range(chan_size):
-        temp_a = []#np.zeros(y_size*chan_size,)
-        temp_b = []#np.zeros(y_size*chan_size,)
-        for i in range(x_size):
-            for j in range(y_size):
-                temp_a.append(float(a_img[i,j,k]))
-                temp_b.append(float(b_img[i,j,k]))
-
-        a[k + x_size + y_size] = -np.power(abs(max(temp_a)),1/3)
-        b[k + x_size + y_size] = np.power(min(temp_b),1/3)
-
-    return a,b
-
-def boundaries_2(a_img,b_img,x_size,y_size,chan_size):
-    # Differently from the previous, here we consider to have just one
-    # channel. This allows to devide the boundaries into two. The one
-    # for the second dimension is [-1,1] while for the first one is
-    # [-delta, delta] with delta being the smallest value that the pixel
-    # can achieve
-    a = np.zeros(x_size+y_size+chan_size,)
-    b = np.zeros(x_size+y_size+chan_size,)
-
-    for i in range(x_size):
-        temp_a = []#np.zeros(y_size*chan_size,)
-        temp_b = []#np.zeros(y_size*chan_size,)
-        for j in range(y_size):
-            for k in range(chan_size):
-                temp_a.append(float(a_img[i,j,k]))
-                temp_b.append(float(b_img[i,j,k]))
-        a[i] = -abs(max(temp_a))
-        b[i] = min(temp_b)
-
-    for j in range(y_size):
-        temp_a = []#np.zeros(y_size*chan_size,)
-        temp_b = []#np.zeros(y_size*chan_size,)
-        for i in range(x_size):
-            for k in range(chan_size):
-                temp_a.append(float(a_img[i,j,k]))
-                temp_b.append(float(b_img[i,j,k]))
-
-        a[j + x_size] = -1
-        b[j + x_size] = 1
-
-    for k in range(chan_size):
-        a[k + x_size + y_size] = -1
-        b[k + x_size + y_size] = 1
-
-    return a,b
-
-def boundaries_random_matrix(a_img,b_img,n,m,p,rank,M):
-    # This function computes the boundaries for the random matrix approach.
-    bound = np.zeros(rank,)
-
-    for r in range(rank):
-        a_max  = np.max(a_img)
-        b_min  = np.min(b_img)
-        M_max  = np.max(abs(M[r]))
-
-        bound[r] = min([-a_max,b_min])/M_max
-
-    return -bound,bound
-
-
 def CrossOver(Parent1,Parent2,F1,F2):
     p = F1/(F1+F2)
 
@@ -267,17 +132,14 @@ def image_region_importance(img):
     return probability_matrix
 
 
-class BlackBox_BOBYQA:
+class BlackBox(object):
     def __init__(self, sess, model, batch_size=1, confidence = CONFIDENCE,
                  targeted = TARGETED, max_iterations = MAX_ITERATIONS,
                  print_every = 100, early_stop_iters = 0,
                  abort_early = ABORT_EARLY,
-                 use_log = False, use_tanh = True, use_resize = False,
+                 use_log = False, use_resize = False,
                  start_iter = 0, L_inf = 0.15,
-                 init_size = 32, use_importance = True, rank = 2,
-                 ordered_domain = False, image_distribution = False,
-                 mixed_distributions = False, Sampling = True, Rank = False,
-                 Rand_Matr = False,Rank_1_Mixed  = False, GenAttack = False,
+                 init_size = 32, use_importance = True,BOBYQA=True, GenAttack = False,
                  max_eval = 1e4, q = None):
         """
         The BOBYQA attack.
@@ -299,7 +161,6 @@ class BlackBox_BOBYQA:
         image_size, num_channels, num_labels = model.image_size, model.num_channels, model.num_labels
         self.model = model
         self.sess = sess
-        self.rank = rank
         self.TARGETED = targeted
         self.target = 0
         self.Generations = 1000
@@ -312,10 +173,6 @@ class BlackBox_BOBYQA:
         self.batch_size = batch_size
         self.num_channels = num_channels
         self.resize_init_size = init_size
-        self.use_importance = use_importance
-        self.ordered_domain = ordered_domain
-        self.image_distribution = image_distribution
-        self.mixed_distributions = mixed_distributions
         if use_resize:
             self.small_x = self.resize_init_size
             self.small_y = self.resize_init_size
@@ -328,7 +185,6 @@ class BlackBox_BOBYQA:
         else:
             self.q = q
         self.L_inf      = L_inf
-        self.use_tanh   = use_tanh
         self.use_resize = use_resize
 
         self.use_log    = tf.placeholder(tf.bool)
@@ -336,32 +192,11 @@ class BlackBox_BOBYQA:
 
         self.max_eval   = max_eval
 
-        if (Rank) or (Rand_Matr):
-            self.Sampling = False
-            if Rank and Rand_Matr:
-                print('It is not possible to do both rank and rand Matrix methods')
-                return -1
-            else:
-                self.Rank = Rank
-                self.Rand_Matr = Rand_Matr
-        else:
-            self.Sampling = Sampling
-            self.Rank = Rank
-            self.Rand_Matr = Rand_Matr
-
-        if Rank_1_Mixed :
-            self.Sampling = False
-            self.Rank = False
-            self.Rand_Matr = False
-            self.Rank_1_Mixed = True
-
+        self.BOBYQA = BOBYQA
         self.GenAttack = GenAttack
         if GenAttack :
-            self.Sampling = False
-            self.Rank = False
-            self.Rand_Matr = False
-            self.Rank_1_Mixed = False
-
+            self.BOBYQA = False
+            
         # each batch has a different modifier value (see below) to evaluate
         shape = (None,image_size,image_size,num_channels)
         single_shape = (image_size, image_size, num_channels)
@@ -397,10 +232,7 @@ class BlackBox_BOBYQA:
 
         # the resulting image, tanh'd to keep bounded from -0.5 to 0.5
         # broadcast self.timg to every dimension of modifier
-        if use_tanh:
-            self.newimg = tf.tanh(self.scaled_modifier + self.timg)/2
-        else:
-            self.newimg = self.scaled_modifier + self.timg
+        self.newimg = self.scaled_modifier + self.timg
 
         # prediction BEFORE-SOFTMAX of the model
         # now we have output at #batch_size different modifiers
@@ -495,42 +327,6 @@ class BlackBox_BOBYQA:
             self.sample_prob = self.get_new_prob(prev_modifier, True)
             self.sample_prob = self.sample_prob.reshape(var_size)
 
-
-    def blackbox_optimizer(self, iteration):
-        # build new inputs, based on current variable value
-        var = self.real_modifier.copy()
-        var_size = self.real_modifier.size
-        if self.use_importance:
-            var_indice = np.random.choice(self.var_list.size, self.batch_size, replace=False, p = self.sample_prob)
-        else:
-            var_indice = np.random.choice(self.var_list.size, self.batch_size, replace=False)
-        indice = self.var_list[var_indice]
-        opt_fun = lambda c: self.sess.run([self.loss],feed_dict = {self.use_log: self.use_log2,
-                            self.modifier: vec2mod(c,indice,var)})[0]
-
-        x_o = np.zeros(self.batch_size,)
-        b   = self.modifier_up[indice]
-        a   = self.modifier_down[indice]
-
-        soln = pybobyqa.solve(opt_fun, x_o, rhobeg = self.L_inf/3,
-                          bounds = (a,b),maxfun=self.batch_size+5,
-                          npt=self.q+1)
-        evaluations = soln.nf
-
-        # adjust sample probability, sample around the points with large gradient
-        nimgs = vec2mod(soln.x,indice,var)
-        # print('the interval was in average', np.median(b-a))
-        # print('The boundary is', opt_fun(a))
-        # print('The solution had the result')
-        # # print(soln)
-        if self.real_modifier.shape[0] > self.resize_init_size:
-            self.sample_prob = self.get_new_prob(self.real_modifier)
-            self.sample_prob = self.sample_prob.reshape(var_size)
-
-        distance = self.sess.run(self.distance, feed_dict={self.use_log : self.use_log2,self.modifier:nimgs})
-
-        return soln.f, evaluations, nimgs
-
     def blackbox_optimizer_ordered_domain(self, iteration,ord_domain):
         # build new inputs, based on current variable value
         var = self.real_modifier.copy()
@@ -569,137 +365,6 @@ class BlackBox_BOBYQA:
         distance = self.sess.run(self.distance, feed_dict={self.use_log : self.use_log2,self.modifier:nimgs})
 
         return soln.f, evaluations, nimgs, summary
-
-    def blackbox_optimizer_Rank_1(self,iteration):
-        #B
-        var = self.real_modifier.copy()
-        var_size = self.real_modifier.size
-
-        opt_fun = lambda c: self.sess.run([self.loss],feed_dict = {self.use_log: self.use_log2,
-                            self.modifier: generator_rank1_img(c,var)})[0]
-
-        #self.modifier_up[]
-        x_o = np.zeros(self.small_x + self.small_y + self.num_channels,)
-
-        print('Highest Modif ', max(self.modifier_up))
-        print('Lowest Modifi ', min(self.modifier_down))
-
-        b_img = self.modifier_up.reshape(self.small_x,self.small_y,
-                                         self.num_channels)
-
-        a_img = self.modifier_down.reshape(self.small_x,self.small_y,
-                                         self.num_channels)
-
-        a,b   = boundaries_2(a_img,b_img,self.small_x,self.small_y,
-                          self.num_channels)
-
-        soln = pybobyqa.solve(opt_fun, x_o, rhobeg = 0.1,
-                          bounds = (a,b),maxfun=self.batch_size*4,
-                          npt=len(a)+1)#min([min(b),abs(max(a))])/3
-
-        evaluations = soln.nf
-        if soln.flag == -1:
-            print('The Boby-QA algorithm cannot be implemented')
-            return -1,-1,-1
-
-        # adjust sample probability, sample around the points with large gradient
-        nimgs = generator_rank1_img(soln.x,var)
-
-        print('Highest Pert ', np.max(nimgs))
-        print('Lowest Pert ', np.min(nimgs))
-
-        if self.real_modifier.shape[0] > self.resize_init_size:
-            self.sample_prob = self.get_new_prob(self.real_modifier)
-            self.sample_prob = self.sample_prob.reshape(var_size)
-
-        return soln.f, evaluations, nimgs
-
-    def blackbox_optimizer_Rank_n(self,iteration):
-        #B
-        n   = self.rank
-        var = self.real_modifier.copy()
-        var_size = self.real_modifier.size
-
-        print('rank outside the funcion', self.rank)
-        opt_fun = lambda c: self.sess.run([self.loss],feed_dict = {self.use_log: self.use_log2,
-                            self.modifier: generator_rankn_img(c,var,self.rank)})[0]
-
-        #self.modifier_up[]
-        nn  = self.small_x + self.small_y + self.num_channels
-        x_o = np.zeros(n*nn,)
-
-        print('Highest Modif ', max(self.modifier_up ))
-        print('Lowest Modifi ', min(self.modifier_down))
-
-        b_img = self.modifier_up.reshape(self.small_x,self.small_y,
-                                         self.num_channels)/n
-
-        a_img = self.modifier_down.reshape(self.small_x,self.small_y,
-                                         self.num_channels)/n
-
-        a   = np.zeros(n*nn,)
-        b   = np.zeros(n*nn,)
-
-        for i in range(n):
-            a_temp,b_temp   = boundaries(a_img,b_img,self.small_x,self.small_y,
-                              self.num_channels)
-            a[i*nn:(i+1)*nn] = a_temp
-            b[i*nn:(i+1)*nn] = b_temp
-
-        soln = pybobyqa.solve(opt_fun, x_o, rhobeg = 0.1,
-                          bounds = (a,b),maxfun=self.batch_size*2*self.rank,
-                          npt=n*nn+1)
-        # print(soln)
-        evaluations = soln.nf
-        # adjust sample probability, sample around the points with large gradient
-        nimgs = generator_rankn_img(soln.x,var,self.rank)
-
-        if self.real_modifier.shape[0] > self.resize_init_size:
-            self.sample_prob = self.get_new_prob(self.real_modifier)
-            self.sample_prob = self.sample_prob.reshape(var_size)
-
-        return soln.f, evaluations, nimgs
-
-    def blackbox_optimizer_Random_Matrix(self,iteration):
-        #B
-        n   = self.rank
-        var = self.real_modifier.copy()
-        var_size = self.real_modifier.size
-
-        M   = []
-        for i in range(n):
-            M.append(2*np.random.binomial(1,1/2,(self.small_x ,self.small_y ,self.num_channels)) - np.ones((self.small_x ,self.small_y ,self.num_channels)))      #np.random.randn(self.small_x ,self.small_y ,self.num_channels)/np.sqrt(self.small_x))
-
-        opt_fun = lambda c: self.sess.run([self.loss],feed_dict = {self.use_log: self.use_log2,self.modifier: generator_rand_gaus_img(c,var,n,M)})[0]
-
-        #self.modifier_up[]
-        x_o = np.zeros(n,)
-
-        print('Highest Modif ', max(self.modifier_up))
-        print('Lowest Modifi ', min(self.modifier_down))
-
-        b_img = self.modifier_up.reshape(self.small_x,self.small_y,
-                                         self.num_channels)/n
-
-        a_img = self.modifier_down.reshape(self.small_x,self.small_y,
-                                         self.num_channels)/n
-
-        a,b   = boundaries_random_matrix(a_img,b_img,self.small_x,self.small_y,
-                              self.num_channels,n,M)
-
-        soln = pybobyqa.solve(opt_fun, x_o, rhobeg = 0.1,
-                          bounds = (a,b),maxfun=n*10,
-                          npt=n*2)
-        print(soln)
-        evaluations = soln.nf
-        # adjust sample probability, sample around the points with large gradient
-        nimgs = generator_rand_gaus_img(soln.x,var,n,M)
-
-        if self.real_modifier.shape[0] > self.resize_init_size:
-            self.sample_prob = self.get_new_prob(self.real_modifier)
-            self.sample_prob = self.sample_prob.reshape(var_size)
-
-        return soln.f, evaluations, nimgs
 
     def blackbox_optimizer_GEN_ATTACK(self,iteration):
         # application of the gen attack according to the algorithm explained in
@@ -786,23 +451,6 @@ class BlackBox_BOBYQA:
             return -4,count,Pn[0]
         return -3, count/6*5, Pn[0]
 
-    def attack(self, imgs, targets):
-        """
-        Perform the L_2 attack on the given images for the given targets.
-
-        If self.targeted is true, then the targets represents the target labels.
-        If self.targeted is false, then targets are the original class labels.
-        """
-        r = []
-        self.target = np.argmax(targets)
-        print('The target is', self.target)
-        print('go up to',len(imgs))
-        # we can only run 1 image at a time, minibatches are used for gradient evaluation
-        for i in range(0,len(imgs)):
-            print('tick',i)
-            r.extend(self.attack_batch(imgs[i], targets[i]))
-        return np.array(r)
-
     def attack_batch(self, img, lab):
         """
         Run the attack on a batch of images and labels.
@@ -822,31 +470,10 @@ class BlackBox_BOBYQA:
                 return x != y
 
         # remove the extra batch dimension
-
-        if self.mixed_distributions & self.image_distribution:
-            print('We cannot acept both mixed_distribution and image_distribution to be True')
-            return -1
-
-        if self.Sampling & self.Rank & self.Rand_Matr:
-            print('We cannot acept both mixed_distribution and image_distribution to be True')
-            return -1
-        if self.Sampling & self.Rank:
-            print('We cannot acept both mixed_distribution and image_distribution to be True')
-            return -1
-        if self.Sampling & self.Rand_Matr:
-            print('We cannot acept both mixed_distribution and image_distribution to be True')
-            return -1
-        if self.Rank & self.Rand_Matr:
-            print('We cannot acept both mixed_distribution and image_distribution to be True')
-            return -1
-
         if len(img.shape) == 4:
             img = img[0]
         if len(lab.shape) == 2:
             lab = lab[0]
-        # convert to tanh-space
-        if self.use_tanh:
-            img = np.arctanh(img*1.999999)
 
         # set the lower and upper bounds accordingly
         lower_bound = 0.0
@@ -868,9 +495,9 @@ class BlackBox_BOBYQA:
         o_bestattack = img
         eval_costs = 0
 
-        if self.ordered_domain:
-            print(np.random.choice(10,3))
-            ord_domain = np.random.choice(self.var_list.size, self.var_list.size, replace=False, p = self.sample_prob)
+    
+        print(np.random.choice(10,3))
+        ord_domain = np.random.choice(self.var_list.size, self.var_list.size, replace=False, p = self.sample_prob)
 
         started_with_log_now_normal = False
 
@@ -879,9 +506,6 @@ class BlackBox_BOBYQA:
 
         global_summary = []
         for step in range(self.MAX_ITERATIONS):
-
-            # set the variables so that we don't have to send them over again
-
 
             # use the model left by last constant change
             prev = 1e6
@@ -895,20 +519,6 @@ class BlackBox_BOBYQA:
                 print("[STATS  ][L2] iter = {}, cost = {}, time = {:.3f}, size = {}, loss = {:.5g}".format(step, eval_costs, train_timer, self.real_modifier.shape, loss[0]))
                 sys.stdout.flush()
 
-            if started_with_log_now_normal and (step>10000):
-                self.use_log2 = True
-                started_with_log_now_noraml = False
-                print('We allow use_log to be true again')
-                l = self.sess.run((self.loss),feed_dict={self.use_log: self.use_log2,self.modifier: self.real_modifier})
-                print('Temporary Loss',l)
-
-            if not np.isfinite(loss):
-                self.use_log2 = False
-                started_with_log_now_normal = True
-                print('We no impose use_log to be false')
-                loss,output = self.sess.run((self.loss,self.output),feed_dict={self.use_log: self.use_log2,self.modifier:self.real_modifier})
-                print('Temporary Loss',loss)
-
             attack_begin_time = time.time()
             # perform the attack
 
@@ -916,62 +526,33 @@ class BlackBox_BOBYQA:
             ub = 0.5*np.ones(img.shape)
             lb = -ub
 
-            # if not self.use_tanh and (step>0):
-            #     self.modifier_up = np.maximum(- nimg.reshape(-1) + self.L_inf,zz.reshape(-1))
-            #     self.modifier_down = np.minimum(- nimg.reshape(-1) - self.L_inf,zz.reshape(-1))
-            if not self.use_tanh:# and (step>0):
-                scaled_modifier = self.sess.run([self.scaled_modifier],feed_dict = {self.use_log: self.use_log2, self.modifier: self.real_modifier})[0]
+            
+            scaled_modifier = self.sess.run([self.scaled_modifier],feed_dict = {self.use_log: self.use_log2, self.modifier: self.real_modifier})[0]
 
 
-                if step == 0:
-                    scaled_modifier = img
+            if step == 0:
+                scaled_modifier = img
 
-                self.modifier_up   = np.maximum( np.minimum(- (img.reshape(-1,) - img0.reshape(-1,)) + self.L_inf,
-                                                           ub.reshape(-1,) - img.reshape(-1,))
-                                                ,zz.reshape(-1,))
-                self.modifier_down = np.minimum( np.maximum(- (img.reshape(-1,) - img0.reshape(-1,)) - self.L_inf,
-                                                           - img.reshape(-1,) + lb.reshape(-1,) )
-                                                ,zz.reshape(-1,))
+            self.modifier_up   = np.maximum( np.minimum(- (img.reshape(-1,) - img0.reshape(-1,)) + self.L_inf,
+                                                        ub.reshape(-1,) - img.reshape(-1,))
+                                            ,zz.reshape(-1,))
+            self.modifier_down = np.minimum( np.maximum(- (img.reshape(-1,) - img0.reshape(-1,)) - self.L_inf,
+                                                        - img.reshape(-1,) + lb.reshape(-1,) )
+                                            ,zz.reshape(-1,))
             if step>0:
                 self.sess.run(self.setup, {self.assign_timg: img,
                                            self.assign_tlab: lab})
                 self.real_modifier.fill(0.0)
 
-            if self.Sampling:
-                if self.ordered_domain:
-                    iteration = np.mod(step,self.use_var_len//self.batch_size)
-                    if (iteration == 0):
-                        # We have to repermute the pixels if they are modifie
-                        if self.image_distribution:
-                            prob = image_region_importance(img).reshape(-1,)
-                            ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p = prob)
-                        elif self.mixed_distributions:
-                            if (step == 0):
-                                prob = image_region_importance(img).reshape(-1,)
-                                ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p = prob)
-                            else:
-                                ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p = self.sample_prob)
-                        else:
-                            ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p = self.sample_prob)
-
-                    l, evaluations, nimg,summary = self.blackbox_optimizer_ordered_domain(iteration,ord_domain)
-                else:
-                    # Normal perturbation method
-                    l, evaluations, nimg = self.blackbox_optimizer(step)
-            elif self.Rank:
-                l, evaluations, nimg = self.blackbox_optimizer_Rank_1(step)
-                if l == -1:
-                    return o_bestattack,eval_costs
-            elif self.Rand_Matr:
-                l, evaluations, nimg = self.blackbox_optimizer_Random_Matrix(step)
-#             print(l)
-            elif self.Rank_1_Mixed:
-                if (step == 0):
-                    l, evaluations, nimg = self.blackbox_optimizer_Rank_1(step)
-                else:
-                    prob = image_region_importance(self.real_modifier[0]).reshape(-1,)
+            if self.BOBYQA:
+                iteration = np.mod(step,self.use_var_len//self.batch_size)
+                if (iteration == 0):
+                    # We have to repermute the pixels if they are modifie
+                    prob = image_region_importance(img).reshape(-1,)
                     ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p = prob)
-                    l, evaluations, nimg, summary = self.blackbox_optimizer_ordered_domain(step,ord_domain)
+                    
+                l, evaluations, nimg,summary = self.blackbox_optimizer_ordered_domain(iteration,ord_domain)
+
             elif self.GenAttack:
                 l, evaluations, nimg = self.blackbox_optimizer_GEN_ATTACK(step)
                 if l == -4:
@@ -993,15 +574,6 @@ class BlackBox_BOBYQA:
             img = img + adv
 
             eval_costs += evaluations
-
-
-
-            # check if we should abort search if we're getting nowhere.
-            if self.ABORT_EARLY and step % self.early_stop_iters == 0:
-                if l > prev*.9999:
-                    print("Early stopping because there is no improvement")
-                    return o_bestattack, eval_costs
-                prev = l
 
             # Find the score output
             loss_test, score, real, other = self.sess.run((self.loss,self.output,self.real,self.other), feed_dict={self.use_log: self.use_log2,self.modifier: nimg})
