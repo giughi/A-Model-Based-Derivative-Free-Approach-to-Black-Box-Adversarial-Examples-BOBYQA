@@ -27,8 +27,10 @@ mkdir ${CHECKPOINT_DIR}
 wget http://jaina.cs.ucdavis.edu/datasets/adv/imagenet/img.tar.gz
 tar -xvf img.tar.gz -C ./Data/Imagenet
 rm img.tar.gz
+mv ./Data/Imagenet/imgs ./Data/Imagenet/images
+rm ./Data/Imagenet/imgs
+
 ```
-however, if it fails to open the tar file, plese export all of the images in the folder ./Data/Imagenet/images
 and to install the inception-v3 net 
 ```
 python Setups/Data_and_Model/setup_inception.py
