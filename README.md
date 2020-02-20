@@ -4,7 +4,7 @@ Scripts that allow the reproduction of the results presented in the article "A M
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
 ### Prerequisites
 
@@ -140,7 +140,7 @@ Note, that the BOBYQA and COMBI normal case expecially need a lot of memory. How
 
 ## Analysis of the Results
 
-With the functions in ./Analysis_Results it is possible to generate the graphs in Figure 1 and 9 of the manuscript once the data are generated again.
+With the functions in ./Analysis_Results it is possible to generate the graphs in Figure 1 and 9 of the manuscript once the data are generated.
 
 ## Insight into BOBYQA
 
