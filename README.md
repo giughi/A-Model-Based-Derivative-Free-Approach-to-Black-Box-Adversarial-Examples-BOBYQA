@@ -53,54 +53,95 @@ End with an example of getting some data out of the system or using it for a lit
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+To run the experiments suggested in the manuscript, it is necessary to run separatly the following codes for each dataset.
 
-### Break down into end to end tests
+These datasets are treated separately because of how the net net is stored and how each net then requires a slightly different implementation.
 
-Explain what these tests test and why
+### MNIST
 
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
+The normally trained net is attacked with:
 
 ```
-Give an example
+# COMBI 
+python Setups/MNIST_CIFAR_COMBI.py --epsilon=0.15 --dim_image=28 --num_channels=1 --dataset=mnist
+# GENE
+python Setups/MNIST_CIFAR_GENE.py --eps=0.15 --test_size=10 --dataset=mnist --Adversary_trained=False
+# SQUARE
+python Setups/MNIST_CIFAR_SQUARE.py --eps=0.15 --test_size=10 --dataset=mnist --Adversary_trained=False
+# BOBYQA
+python Setups/MNIST_CIFAR_BOBYQA.py --eps=0.15 --test_size=10 --dataset=mnist --Adversary_trained=False
 ```
 
-## Deployment
+The Adversarially trained net instead with 
+```
+# COMBI
+python Setups/MNIST_CIFAR_COMBI.py --epsilon=0.15 --dim_image=28 --num_channels=1 --dataset=mnist --Adversary_trained=True
+# GENE
+python Setups/MNIST_CIFAR_GENE.py --eps=0.15 --test_size=10 --dataset=mnist --Adversary_trained=True
+# SQUARE
+python Setups/MNIST_CIFAR_SQUARE.py --eps=0.15 --test_size=10 --dataset=mnist --Adversary_trained=True
+# BOBYQA 
+python Setups/MNIST_CIFAR_BOBYQA.py --eps=0.15 --test_size=10 --dataset=mnist --Adversary_trained=True
+```
 
-Add additional notes about how to deploy this on a live system
+### CIFAR
 
-## Built With
+The normally trained net is attacked with
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+```
+# COMBI
+python Setups/MNIST_CIFAR_COMBI.py --epsilon=0.15 --dim_image=32 --num_channels=3 --dataset=cifar10
+# GENE
+python Setups/MNIST_CIFAR_GENE.py --eps=0.15 --test_size=10 --dataset=cifar10 --Adversary_trained=False
+# SQUARE
+python Setups/MNIST_CIFAR_SQUARE.py --eps=0.15 --test_size=10 --dataset=cifar10 --Adversary_trained=False
+# BOBYQA
+python Setups/MNIST_CIFAR_BOBYQA.py --eps=0.15 --test_size=10 --dataset=cifar10 --Adversary_trained=False
+```
 
-## Contributing
+While the adversarially trained net was attacked with:
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+```
+# COMBI
+python Setups/MNIST_CIFAR_COMBI.py --epsilon=0.15 --dim_image=32 --num_channels=3 --dataset=cifar10 --Adversary_trained=True
+# GENE
+python Setups/MNIST_CIFAR_BOBYQA.py --eps=0.15 --test_size=10 --dataset=cifar10 --Adversary_trained=True
+# SQUARE
+python Setups/MNIST_CIFAR_SQUARE.py --eps=0.15 --test_size=10 --dataset=cifar10 --Adversary_trained=False
+# BOBYQA
+python Setups/MNIST_CIFAR_BOBYQA.py --eps=0.15 --test_size=10 --dataset=cifar10 --Adversary_trained=True
+```
 
-## Versioning
+### ImageNet
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+In the normal case   
 
-## Authors
+```
+# COMBI
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+# GENE
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+# SQUARE
 
-## License
+# BOBYQA
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+```
 
-## Acknowledgments
+While in the adversary case
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+```
+# COMBI
+
+# GENE
+
+# SQUARE
+
+# BOBYQA
+
+```
+
+## Analysis of the Results
+
+To analyse the results it is possible to use the following functions. Though, to run them it is necessary to write inside of the script what energy bounds have been considered.
+
+

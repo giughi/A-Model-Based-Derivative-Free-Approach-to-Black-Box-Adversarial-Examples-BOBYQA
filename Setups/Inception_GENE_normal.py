@@ -1,14 +1,12 @@
 """
 Author: Moustafa Alzantot (malzantot@ucla.edu)
-python Setups/main.py --input_dir=/Data/ImageNet/images --test_size=1 \
-    --eps=0.05 --alpha=0.15 --mutation_rate=0.10  \
-    --max_steps=100000 --output_dir=attack_outputs \
-    --pop_size=6 --target=704 --adaptive=True --resize_dim=96
 """
+from __future__ import print_function
 import time
 import sys
 sys.path.append("./")
 # main_dir = os.path.dirname(os.path.dirname(__file__))
+
 
 import random
 import numpy as np

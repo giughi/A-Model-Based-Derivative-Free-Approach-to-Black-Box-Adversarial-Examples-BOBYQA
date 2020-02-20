@@ -1,6 +1,6 @@
 scipy==0.19
 python==3.6
-tensorflow==1.14
+tensorflow==1.13
 keras
 pandas
 
@@ -15,4 +15,9 @@ pandas
 export PATH=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/bin/:$PATH
 export PYTHONPATH=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/lib/python3.6/site-packages/:$PYTHONPATH
 
-
+#to do
+On plane
+- comment all of the functions
+- write the read me
+On Bus
+- get the analysis functions

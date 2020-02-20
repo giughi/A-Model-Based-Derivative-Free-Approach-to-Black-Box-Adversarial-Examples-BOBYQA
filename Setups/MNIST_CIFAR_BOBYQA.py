@@ -204,12 +204,6 @@ if __name__ == '__main__':
                     list_boby = pickle.load(fp)
                 already_done_init = len(list_boby)
 
-        # if FLAGS.attack_type == 'gene':
-        #     if os.path.exists(saving_name_gene):
-        #         if os.path.getsize(saving_name_gene)>0:
-        #             with open(saving_name_gene, "rb") as fp:
-        #                 list_gene = pickle.load(fp)
-        #             already_done_init = len(list_gene)
         already_done = already_done_init
 
         if already_done_init>0:
