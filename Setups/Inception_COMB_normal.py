@@ -178,9 +178,6 @@ if __name__ == '__main__':
                 test_in_2 = tf.placeholder(tf.float32, (None, 299, 299, 3), 'x')
                 logit_pred = model.predict(test_in_2)
                 test_pred_2 = tf.argmax(model.predict(test_in_2), axis=1)
-                # Create attack
-                # attack_class = getattr(sys.modules[__name__], FLAGS.attack)
-                # attack = attack_class(model, FLAGS)
                 
                 if first_iter:
                     orig_pred = sess.run(test_pred_2, feed_dict={test_in_2: [input_img0]})[0]
@@ -201,10 +198,12 @@ if __name__ == '__main__':
                 start_time = time.time()
 
                 y_input = tf.placeholder(dtype=tf.int32, shape=[None])
-                test_in = tf.placeholder(tf.float32, (1, FLAGS.dim_image, FLAGS.dim_image, FLAGS.num_channels), 'x')
-                probs = model.predict(test_in)
+                test_in = test_in_2#tf.placeholder(tf.float32, (1, FLAGS.dim_image, FLAGS.dim_image, FLAGS.num_channels), 'x')
+                probs = logit_pred #model.predict(test_in)
                 preds = tf.argmax(probs, axis=1)
                 logits = tf.math.log(probs)
+
+                print('Done FIRST PART')
 
                 batch_num = tf.range(0, limit=tf.shape(probs)[0])
                 indices = tf.stack([batch_num, y_input], axis=1)

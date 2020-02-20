@@ -118,7 +118,7 @@ In the normal case
 
 ```
 # COMBI
-
+python Setups/Inception_COMB_normal.py --sample_size=1 --epsilon=0.1 --max_queries=1500
 # GENE
 python Setups/Inception_GENE_normal.py --eps=0.1 --test_size=1 --max_queries=15000
 # SQUARE
