@@ -44,7 +44,7 @@ CHECKPOINT_DIR=./Models
 mkdir ${CHECKPOINT_DIR}
 wget http://download.tensorflow.org/models/adv_inception_v3_2017_08_18.tar.gz
 tar -xvf adv_inception_v3_2017_08_18.tar.gz
-mv adv_inception_v3_2017_08_18.ckpt* ${CHECKPOINT_DIR}
+mv adv_inception_v3.ckpt* ${CHECKPOINT_DIR}
 rm adv_inception_v3_2017_08_18.tar.gz
 ```
 
