@@ -35,8 +35,8 @@ flags.DEFINE_float('mutation_rate', 0.005, 'Mutation rate')
 flags.DEFINE_float('eps', 0.10, 'maximum L_inf distance threshold')
 flags.DEFINE_float('alpha', 0.20, 'Step size')
 flags.DEFINE_integer('pop_size', 6, 'Population size')
-flags.DEFINE_integer('max_steps', 3000, 'Maximum number of iterations')
-flags.DEFINE_integer('resize_dim', None, 'Reduced dimension for dimensionality reduction')
+flags.DEFINE_integer('max_queries', 15000, 'Maximum number of iterations')
+flags.DEFINE_integer('resize_dim', 96, 'Reduced dimension for dimensionality reduction')
 flags.DEFINE_bool('adaptive', True, 'Turns on the dynamic scaling of mutation prameters')
 flags.DEFINE_string('model', 'inception', 'model name')
 flags.DEFINE_integer('target', None, 'target class. if not provided will be random')
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     attacks = []
 
-    num_valid_images = 1000#FLAGS.test_size#len(inputs)
+    num_valid_images = FLAGS.test_size#len(inputs)
 
     saving_dir = main_dir+'/Results/Imagenet/GENE_'+str(FLAGS.eps)+'.txt'
     already_done = 0
@@ -99,7 +99,7 @@ if __name__ == '__main__':
                     pop_size=FLAGS.pop_size,
                     mutation_rate = FLAGS.mutation_rate,
                     eps=FLAGS.eps,
-                    max_steps=FLAGS.max_steps,
+                    max_steps=int(FLAGS.max_queries/(FLAGS.pop_size-1)),
                     alpha=FLAGS.alpha,
                     resize_dim=FLAGS.resize_dim,
                     adaptive=FLAGS.adaptive)
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
         frob_norm = np.linalg.norm(adv_img-input_img)
         attacks.append([query_count, real_label, target_label, frob_norm])
-        with open(main_dir+'/Results/Imagenet/GENE_'+str(FLAGS.eps)+'_2nd_500_.txt', "wb") as fp:
+        with open(saving_dir, "wb") as fp:
                     pickle.dump(attacks, fp)
         # logger.close(num_attempts=total_count)
         print('Number of success = {} / {}.'.format(success_count, total_count))

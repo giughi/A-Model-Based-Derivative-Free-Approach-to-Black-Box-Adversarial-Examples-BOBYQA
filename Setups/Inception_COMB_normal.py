@@ -84,7 +84,7 @@ if __name__ == '__main__':
     # print(inputs[0])
     #  Create a session
 
-    num_valid_images = 1000  # len(inputs)
+    num_valid_images = FLAGS.sample_size
     total_count = 0  # Total number of images attempted
     success_count = 0
     attacks = []
@@ -199,10 +199,9 @@ if __name__ == '__main__':
                     orig_class = orig_pred
 
                 start_time = time.time()
-                print('Inside main_MBAE the target is', np.argmax(target_class))
 
                 y_input = tf.placeholder(dtype=tf.int32, shape=[None])
-                test_in = tf.placeholder(tf.float32, (None, FLAGS.dim_image, FLAGS.dim_image, FLAGS.num_channels), 'x')
+                test_in = tf.placeholder(tf.float32, (1, FLAGS.dim_image, FLAGS.dim_image, FLAGS.num_channels), 'x')
                 probs = model.predict(test_in)
                 preds = tf.argmax(probs, axis=1)
                 logits = tf.math.log(probs)

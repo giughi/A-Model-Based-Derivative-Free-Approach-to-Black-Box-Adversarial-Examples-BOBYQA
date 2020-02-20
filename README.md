@@ -120,28 +120,28 @@ In the normal case
 # COMBI
 
 # GENE
-
+python Setups/Inception_GENE_normal.py --eps=0.1 --test_size=1 --max_queries=15000
 # SQUARE
-
+python Setups/Inception_SQUA_normal.py --test_size=1 --eps=0.1 --max_steps=15000
 # BOBYQA
-
+python Setups/Inception_BOBY_normal.py --eps=0.1 --max_queries=15000 --test_size=1
 ```
 
 While in the adversary case
 
 ```
 # COMBI
-
-# GENE
-
-# SQUARE
-
+python Setups/Inception_COMB_adv.py --sample_size=1 --epsilon=0.1 --max_queries=15000
 # BOBYQA
-
+python Setups/Inception_BOBY_adv.py --eps=0.1 --test_size=1 --max_eval=15000
 ```
+
+Note, that the BOBYQA and COMBI normal case expecially need a lot of memory.
 
 ## Analysis of the Results
 
 To analyse the results it is possible to use the following functions. Though, to run them it is necessary to write inside of the script what energy bounds have been considered.
 
+## Insight into BOBYQA
 
+We suggest to check the normal attack to inception v3 if somone want to check in more detail the implementation of the attack as this is the most cleaned implementation

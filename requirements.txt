@@ -4,20 +4,3 @@ tensorflow==1.13
 keras
 pandas
 
-
-
-# PYTHONUSERBASE=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA$ pip3 install --user scipy==0.19
-
-
-
-#To invoke the installation:
-
-export PATH=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/bin/:$PATH
-export PYTHONPATH=~/Documents/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/lib/python3.6/site-packages/:$PYTHONPATH
-
-#to do
-On plane
-- comment all of the functions
-- write the read me
-On Bus
-- get the analysis functions

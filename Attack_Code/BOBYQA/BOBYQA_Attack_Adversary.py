@@ -301,16 +301,10 @@ class BlackBox_BOBYQA:
         self.MAX_ITERATIONS = max_iterations
         self.print_every = print_every
         self.early_stop_iters = early_stop_iters if early_stop_iters != 0 else max_iterations // 10
-        self.ABORT_EARLY = abort_early
         self.CONFIDENCE = confidence
-        self.start_iter = start_iter
         self.batch_size = batch_size
         self.num_channels = num_channels
         self.resize_init_size = init_size
-        self.use_importance = use_importance
-        self.ordered_domain = ordered_domain
-        self.image_distribution = image_distribution
-        self.mixed_distributions = mixed_distributions
         if use_resize:
             self.small_x = self.resize_init_size-1
             self.small_y = self.resize_init_size-1
@@ -319,12 +313,8 @@ class BlackBox_BOBYQA:
             self.small_y = image_size
         
         self.L_inf = L_inf
-        self.use_tanh = use_tanh
         self.use_resize = use_resize
         self.max_eval = max_eval
-        self.Sampling = Sampling
-        self.Rank = Rank
-        self.Rand_Matr = Rand_Matr
 
         if max_eval_internal==0:
             self.max_eval_internal = max_eval
@@ -438,8 +428,8 @@ class BlackBox_BOBYQA:
         opt_fun = Objfun(lambda c: self.loss_f(img, vec2modMatRand3(c, indice, var, Random_Matrix, super_dependency, bb, aa,
                                                                self.overshoot), only_loss=True)[0])
         initial_loss = opt_fun(x_o)
-        if initial_loss != self.l:
-            print(' COULD NOT REBUILD pert', initial_loss-self.l)
+        # if initial_loss != self.l:
+        #     print(' COULD NOT REBUILD pert', initial_loss-self.l)
         user_params = {'init.random_initial_directions':False, 'init.random_directions_make_orthogonal':False}
         soln = pybobyqa.solve(opt_fun, x_o, rhobeg=np.min(b-a)/3,
                               bounds=(a, b), maxfun=nn*1.2,
@@ -539,9 +529,8 @@ class BlackBox_BOBYQA:
         eval_costs = self.done_eval_costs
         internal_eval_costs = 0
         
-        if self.ordered_domain:
-            # print(np.random.choice(10, 3))
-            ord_domain = np.random.choice(self.var_list.size, self.var_list.size, replace=False, p=self.sample_prob)
+        
+        ord_domain = np.random.choice(self.var_list.size, self.var_list.size, replace=False, p=self.sample_prob)
 
         iteration_scale = -1
         iteration_domain = -1
@@ -602,60 +591,52 @@ class BlackBox_BOBYQA:
             # if step > 0:
             #     self.real_modifier.fill(0.0)
             
-            if self.ordered_domain:  
+            iteration_scale += 1
+            iteration_domain = np.mod(iteration_scale, (self.use_var_len//self.batch_size + 1))
 
-                iteration_scale += 1
-                iteration_domain = np.mod(iteration_scale, (self.use_var_len//self.batch_size + 1))
+            # print(iteration_domain,iteration_scale)
+            force_renew = False
+            # print('iteration_domain ', iteration_domain)
+            if iteration_domain == 0:
+                # We force to regenerate a distribution of the nodes if we have 
+                # already optimised over all of the domain
+                force_renew = True
 
-                # print(iteration_domain,iteration_scale)
-                force_renew = False
-                # print('iteration_domain ', iteration_domain)
-                if iteration_domain == 0:
-                    # We force to regenerate a distribution of the nodes if we have 
-                    # already optimised over all of the domain
-                    force_renew = True
+            # if self.use_resize:
+            if step in steps:
+                idx = steps.index(step)
+                self.small_x = dimen[idx]
+                self.small_y = dimen[idx]
+                self.resize_img(self.small_y, self.small_x, False)
+                # print('Insider of reside dim', self.small_x)
+                iteration_scale = 0
+                iteration_domain = 0
+                force_renew = True
+
+            if  force_renew:  
+                # We have to restrict the random matrix and the
+                KK = 1
+                super_dependency, permutation = matr_subregions_division_2(np.zeros(np.array([img]).shape),
+                                                            self.small_x, permutation, KK, force_renew)
+
+                Random_Matrix = np.ones(np.array([img]).shape)
+
 
                 # if self.use_resize:
-                if step in steps:
-                    idx = steps.index(step)
-                    self.small_x = dimen[idx]
-                    self.small_y = dimen[idx]
-                    self.resize_img(self.small_y, self.small_x, False)
-                    # print('Insider of reside dim', self.small_x)
-                    iteration_scale = 0
-                    iteration_domain = 0
-                    force_renew = True
+                prob = image_region_importance(cv2.resize(img, (self.small_x, self.small_y), 
+                                                            interpolation=cv2.INTER_LINEAR)).reshape(-1,)
 
-                if  force_renew:  
-                    # We have to restrict the random matrix and the
-                    KK = 1
-                    super_dependency, permutation = matr_subregions_division_2(np.zeros(np.array([img]).shape),
-                                                                self.small_x, permutation, KK, force_renew)
+                print('Adding new ord_domain')
+                ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p=prob)
+                
 
-                    Random_Matrix = np.ones(np.array([img]).shape)
+            # print('====> ord_domain', ord_domain)
+            l, evaluations, nimg, times, summary = self.blackbox_optimizer_ordered_domain(iteration_domain,
+                                                                                            ord_domain,
+                                                                                            Random_Matrix,
+                                                                                            super_dependency,
+                                                                                            img, 1,img0)
 
-                    if self.image_distribution:
-
-                        # if self.use_resize:
-                        prob = image_region_importance(cv2.resize(img, (self.small_x, self.small_y), 
-                                                                  interpolation=cv2.INTER_LINEAR)).reshape(-1,)
-
-                        print('Adding new ord_domain')
-                        ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p=prob)
-                    
-                    else:
-                        ord_domain = np.random.choice(self.use_var_len,
-                                                      self.use_var_len, replace=False, p=self.sample_prob)
-
-                # print('====> ord_domain', ord_domain)
-                l, evaluations, nimg, times, summary = self.blackbox_optimizer_ordered_domain(iteration_domain,
-                                                                                              ord_domain,
-                                                                                              Random_Matrix,
-                                                                                              super_dependency,
-                                                                                              img, 1,img0)
-            else:
-                # Normal perturbation method
-                l, evaluations, nimg = self.blackbox_optimizer(step)
 
             self.l = l
 

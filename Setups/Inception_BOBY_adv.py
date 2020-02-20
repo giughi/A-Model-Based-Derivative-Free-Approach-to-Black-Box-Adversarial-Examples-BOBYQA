@@ -39,14 +39,12 @@ flags.DEFINE_integer('batch', 50, 'Dimension of the sampling domain.')
 flags.DEFINE_integer('test_example', None, 'Test only one image')
 
 flags.DEFINE_float('eps', 0.10, 'maximum L_inf distance threshold')
-flags.DEFINE_integer('max_steps', 10000, 'Maximum number of iterations')
+flags.DEFINE_integer('max_eval', 15000, 'Maximum number of iterations')
 flags.DEFINE_integer('resize_dim', 96, 'Reduced dimension for dimensionality reduction')
 flags.DEFINE_string('model', 'inception', 'model name')
 flags.DEFINE_string('interp', 'over', 'kind of interpolation done on the data, either  <<over>> or <<linear>>')
 flags.DEFINE_integer('seed', 1216, 'random seed')
 flags.DEFINE_integer('target', None, 'target class. if not provided will be random')
-flags.DEFINE_bool('print_image', False, 'Bool on targeted attack.')
-flags.DEFINE_bool('worst_attack', False, 'Bool on if the image to be attacked is the most difficult')
 flags.DEFINE_integer('jumping',0,'images to skip')
 FLAGS = flags.FLAGS
 
@@ -92,25 +90,16 @@ if __name__ == '__main__':
     success_count = 0
     attacks = []
 #         logger = utils.ResultLogger(FLAGS.output_dir, FLAGS.flag_values_dict())
-    if FLAGS.print_image:
-        saving_dir = main_dir+'/Results/Imagenet/Adv_Images/ADV_BOBY_'+str(FLAGS.eps)+'_targeted_'+str(FLAGS.targeted)
-        num_valid_images = 5
-    else:
-        if FLAGS.worst_attack:
-            saving_dir = main_dir+'/Results/Imagenet/ADV_BOBY_'+str(FLAGS.eps)+'_2nd_500'+str(FLAGS.batch)+'_WORST_ATTACK.txt'
-            print(saving_dir)
-            saving_dir_full = main_dir+'/Results/Imagenet/ADV_BOBY_'+str(FLAGS.eps)+'_2nd_500'+str(FLAGS.batch)+'_WORST_ATTACK.txt'
-        else:
-            saving_dir = main_dir+'/Results/Imagenet/ADV_BOBY_'+str(FLAGS.eps)+'_2nd_500'+str(FLAGS.batch)+'_5_jumping_'+str(FLAGS.jumping)+'.txt'
-            print(saving_dir)
-            saving_dir_full = main_dir+'/Results/Imagenet/ADV_BOBY_'+str(FLAGS.eps)+'_2nd_500'+str(FLAGS.batch)+'_5_jumping_'+str(FLAGS.jumping)+'.txt'
-        already_done = 0
-        if os.path.exists(saving_dir_full):
-            if os.path.getsize(saving_dir_full)>0:
-                with open(saving_dir_full, "rb") as fp:
-                    attacks = pickle.load(fp)
-                    already_done = len(attacks) + 1
-        print('=====> Already done ', already_done)
+    saving_dir = main_dir+'/Results/Imagenet/ADV_BOBY_'+str(FLAGS.eps)+'.txt'
+    print(saving_dir)
+    saving_dir_full = main_dir+'/Results/Imagenet/ADV_BOBY_'+str(FLAGS.eps)+'.txt'
+    already_done = 0
+    if os.path.exists(saving_dir_full):
+        if os.path.getsize(saving_dir_full)>0:
+            with open(saving_dir_full, "rb") as fp:
+                attacks = pickle.load(fp)
+                already_done = len(attacks) + 1
+    print('=====> Already done ', already_done)
 
     for ii in range(already_done+FLAGS.jumping, num_valid_images):
         
@@ -193,12 +182,6 @@ if __name__ == '__main__':
                     if FLAGS.verbose:
                         print('Real = {}, Predicted = {}, Target = {}'.format(
                             real_label, orig_pred, np.argmax(target_label)))
-                    if FLAGS.worst_attack:
-                        worst_class = np.argmin(logits_in)
-                        if worst_class != np.argmin(logits_in1):
-                            Warning('THE MODEL IS BEHAVING WIERDLY')
-                        target_label = np.eye(1001)[worst_class]
-                        print('Because of Worst Case target is', worst_class)
                     if orig_pred != real_label:
                         if FLAGS.verbose:
                             print('\t Skipping incorrectly classified image.')
@@ -231,9 +214,8 @@ if __name__ == '__main__':
 
                 
                 attack = BlackBox_BOBYQA(loss_func, batch_size=FLAGS.batch , max_iterations=10000, print_every=1, 
-                                        early_stop_iters=100, confidence=0, targeted=True, use_log=True,
-                                        use_tanh=False, use_resize=True, L_inf=FLAGS.eps, ordered_domain=True,
-                                        image_distribution=True, mixed_distributions=False, max_eval=15000,
+                                        early_stop_iters=100, confidence=0, targeted=True, use_resize=True, 
+                                        L_inf=FLAGS.eps, max_eval=FLAGS.max_eval,
                                         done_eval_costs=query_count, max_eval_internal=2000, 
                                         perturbed_img=perturbed_img, ord_domain=ord_domain, steps_done=steps_done,
                                         iteration_scale=iteration_scale,image0=img0, over=FLAGS.interp, 
@@ -283,16 +265,8 @@ if __name__ == '__main__':
 
         frob_norm = np.linalg.norm(adv_img-img0)
 
-        if FLAGS.print_image:
-            if final_pred == np.argmax(target_label):
-                to_save = [img0, adv_img]
-            else:
-                to_save = []
-            with open(saving_dir+'_img_n_'+str(ii)+'.txt', "wb") as fp:
-                        pickle.dump(to_save, fp)
-        else:
-            attacks.append([query_count, real_label, np.argmax(target_label), values_inter['loss'],frob_norm])
-            with open(saving_dir, "wb") as fp:
-                        pickle.dump(attacks, fp)
+        attacks.append([query_count, real_label, np.argmax(target_label), values_inter['loss'],frob_norm])
+        with open(saving_dir, "wb") as fp:
+                    pickle.dump(attacks, fp)
             # logger.close(num_attempts=total_count)
         print('Number of success = {} / {}.'.format(success_count, total_count))

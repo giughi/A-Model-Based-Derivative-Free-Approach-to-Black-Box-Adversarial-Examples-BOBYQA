@@ -36,7 +36,6 @@ flags.DEFINE_string('interp', 'over', 'kind of interpolation done on the data, e
 flags.DEFINE_integer('seed', 1216, 'random seed')
 flags.DEFINE_integer('target', None, 'target class. if not provided will be random')
 flags.DEFINE_bool('targeted', True, 'Bool on targeted attack.')
-flags.DEFINE_bool('print_image', True, 'Bool on targeted attack.')
 FLAGS = flags.FLAGS
 
 def p_selection(p_init, it, n_iters):
@@ -156,26 +155,23 @@ if __name__ == '__main__':
     dataset = ImageNet(FLAGS.input_dir)
     inputs, targets, reals, paths = utils_2.generate_data(dataset, FLAGS.test_size)
     
-    num_valid_images = 1000  # len(inputs)
+    num_valid_images = FLAGS.test_size  # len(inputs)
     total_count = 0  # Total number of images attempted
     success_count = 0
     attacks = []
     log_querries = []
 #         logger = utils.ResultLogger(FLAGS.output_dir, FLAGS.flag_values_dict())
-    if FLAGS.print_image:
-        saving_dir = main_dir+'/Results/Imagenet/Adv_Images/SQUA_'+str(FLAGS.eps)+'_targeted_'+str(FLAGS.targeted)
-        num_valid_images = 5
-    else:
-        saving_dir = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'_targeted_'+str(FLAGS.targeted)+'.txt'
-        print(saving_dir)
-        saving_dir_full = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'_targeted_'+str(FLAGS.targeted)+'.txt'
-        already_done = 0
-        if os.path.exists(saving_dir_full):
-            if os.path.getsize(saving_dir_full)>0:
-                with open(saving_dir_full, "rb") as fp:
-                    attacks = pickle.load(fp)
-                    already_done = len(attacks)
-        print('=====> Already done ', already_done)
+    
+    saving_dir = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'.txt'
+    print(saving_dir)
+    saving_dir_full = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'.txt'
+    already_done = 0
+    if os.path.exists(saving_dir_full):
+        if os.path.getsize(saving_dir_full)>0:
+            with open(saving_dir_full, "rb") as fp:
+                attacks = pickle.load(fp)
+                already_done = len(attacks)
+    print('=====> Already done ', already_done)
 
     for ii in range(already_done, num_valid_images):
         
@@ -280,17 +276,9 @@ if __name__ == '__main__':
             continue
         
 
-        if FLAGS.print_image:
-            if final_pred == np.argmax(target_label):
-                to_save = [img0, adv_img]
-            else:
-                to_save = []
-            with open(saving_dir+'_img_n_'+str(ii)+'.txt', "wb") as fp:
-                        pickle.dump(to_save, fp)
-        else:
-            attacks.append([query_count, real_label, np.argmax(target_label)])
-            with open(saving_dir, "wb") as fp:
-                        pickle.dump(attacks, fp)
-            log_querries = np.append(log_querries, query_count)
+        attacks.append([query_count, real_label, np.argmax(target_label)])
+        with open(saving_dir, "wb") as fp:
+                    pickle.dump(attacks, fp)
+        log_querries = np.append(log_querries, query_count)
         # logger.close(num_attempts=total_count)
         print('Number of success = {} / {} with median {}'.format(success_count, total_count, np.median(log_querries)))

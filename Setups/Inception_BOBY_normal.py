@@ -28,7 +28,6 @@ flags.DEFINE_integer('batch', 50, 'Dimension of the sampling domain.')
 flags.DEFINE_integer('test_example', None, 'Test only one image')
 flags.DEFINE_integer('max_queries', 15000, 'Maximum number of iterations')
 flags.DEFINE_float('eps', 0.10, 'maximum L_inf distance threshold')
-flags.DEFINE_integer('max_steps', 10000, 'Maximum number of iterations')
 flags.DEFINE_string('interp', 'over', 'kind of interpolation done on the data, either  <<over>> or <<linear>>')
 flags.DEFINE_integer('seed', 1216, 'random seed')
 flags.DEFINE_integer('target', None, 'target class. if not provided will be random')
@@ -107,9 +106,9 @@ if __name__ == '__main__':
                 test_pred = tf.argmax(logit_pred, axis=1)
                 
                 attack = BlackBox_BOBYQA(sess, model, batch_size=FLAGS.batch , max_iterations=10000,  
-                                        early_stop_iters=100, confidence=0, targeted=True, use_resize=True, 
-                                        L_inf=FLAGS.eps, max_eval=FLAGS.max_queries, print_every=10,
-                                        done_eval_costs=query_count, max_eval_internal=1000, 
+                                        confidence=0, targeted=True, use_resize=True, 
+                                        L_inf=FLAGS.eps, max_eval=FLAGS.max_queries, print_every=1,
+                                        done_eval_costs=query_count, max_eval_internal=100, 
                                         perturbed_img=perturbed_img, ord_domain=ord_domain, steps_done=steps_done,
                                         iteration_scale=iteration_scale,image0=img0, over=FLAGS.interp, 
                                         permutation=permutation)
