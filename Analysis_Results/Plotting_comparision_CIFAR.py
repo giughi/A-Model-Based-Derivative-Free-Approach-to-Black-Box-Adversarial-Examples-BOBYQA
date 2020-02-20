@@ -67,35 +67,25 @@ for i in range(len(L_inf_var)):
 
     BATCH = L_inf_var[i]
     
-    if BATCH == 0.1 or BATCH == 0.05:    
-        with open(main_dir+'/Results/CIFAR/distilled_dist_L_inf_cifar10_'+str(BATCH)+'_2 (1).txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            dist_adv = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/distilled_gene_L_inf_cifar10_'+str(BATCH)+'_2 (1).txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            gene_adv = pickle.load(fp)
-    elif BATCH == 0.02:
-        with open(main_dir+'/Results/CIFAR/distilled_dist_L_inf_cifar10_0.0225_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            dist_adv = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/distilled_gene_L_inf_cifar10_0.0225_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            gene_adv = pickle.load(fp)
-    else:
-        with open(main_dir+'/Results/CIFAR/distilled_dist_L_inf_cifar10_'+str(BATCH)+'_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            dist_adv = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/distilled_gene_L_inf_cifar10_'+str(BATCH)+'_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            gene_adv = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_3000_distilled_.txt',"rb") as fp:
+
+    with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        dist_adv = pickle.load(fp)
+    with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        gene_adv = pickle.load(fp)
+    with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
         combi_adv = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/Square_summary_dist_L_inf_'+str(BATCH)+'_adv_True.txt',"rb") as fp:
+    with open(main_dir+'/Results/CIFAR/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
         block_adv = pickle.load(fp)
         
     
 
-    with open(main_dir+'/Results/CIFAR/dist_L_inf_cifar10_'+str(BATCH)+'_refined.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+    with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_300_normal.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
         dist = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/gene_L_inf_cifar10_'+str(BATCH)+'_refined.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+    with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
         gene = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_3000_normal.txt',"rb") as fp:
+    with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
         combi = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/Square_summary_dist_L_inf_'+str(BATCH)+'_adv_False.txt',"rb") as fp:
+    with open(main_dir+'/Results/CIFAR/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
         block = pickle.load(fp)
 
     total_number = np.minimum(np.minimum(len(dist), len(gene)), len(combi))
@@ -197,16 +187,6 @@ fig  = plt.figure()
 plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
-# plt.plot(r,np.transpose(M[:3]),lw=2.5)
-# plt.semilogx(L_inf_var[1:],SR_g[1:],lw=2.5,linestyle='-', marker='o')
-# plt.semilogx(L_inf_var[1:],SR_b[1:],lw=2.5,linestyle='-', marker='o')
-# plt.semilogx(L_inf_var[1:],SR_c[1:],lw=2.5,linestyle='-', marker='o')
-# plt.legend(['GenAttack','BOBYQA','COMBI'], fontsize=18, framealpha=0.4)
-# plt.xlabel(r"$\epsilon_\infty$",fontsize=18)
-# plt.ylabel('SR',fontsize=18)
-# plt.axis(fontsize=18)
-
-# fig.savefig(saving_title+str(BATCH)+'.pdf',bbox_inches='tight')
     
 print('Gen', SR_g)
 print('COM', SR_c)
@@ -230,7 +210,6 @@ colors = prop_cycle.by_key()['color']
 
 name_arrays = ['GenAttack','BOBYQA','COMBI','SQUARE']
 
-#     M = M/m
 fig  = plt.figure()
 
 plt.rc('xtick',labelsize=16)
@@ -245,14 +224,6 @@ pl4, = plt.semilogx(L_inf_var,SR_g_adv,lw=2,linestyle='--', marker='x',color=col
 pl5, = plt.semilogx(L_inf_var,SR_b_adv,lw=2,linestyle='--', marker='x',color=colors[1])
 pl6, = plt.semilogx(L_inf_var,SR_c_adv,lw=2,linestyle='--', marker='x',color=colors[2])
 pl7, = plt.semilogx(L_inf_var,SR_s_adv,lw=2,linestyle='--', marker='x',color=colors[3])
-# pl3, = plt.plot(r,M[3,:],'--',color=colors[0],lw=2)
-# pl4, = plt.plot(r,M[4,:],'--',color=colors[1],lw=2)
-# pl5, = plt.plot(r,M[5,:],'--',color=colors[2],lw=2)
-# pl6, = plt.plot(r,M[6,:],color=colors[3],lw=2)
-# pl7, = plt.plot(r,M[7,:],'--',color=colors[3],lw=2)
-
-
-#     plt.plot(r,np.transpose(M),lw=2)
 l1 = plt.legend([pl0,pl1,pl2,pl3], ['','','',''],loc=1, fontsize=16, framealpha=0.,ncol=1,
                 bbox_to_anchor=(0.7,0.413))
 l2 = plt.legend([pl4,pl5,pl6,pl7], name_arrays,loc=4, fontsize=16, framealpha=0.,ncol=1)

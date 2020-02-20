@@ -136,11 +136,11 @@ python Setups/Inception_COMB_adv.py --sample_size=1 --epsilon=0.1 --max_queries=
 python Setups/Inception_BOBY_adv.py --eps=0.1 --test_size=1 --max_eval=15000
 ```
 
-Note, that the BOBYQA and COMBI normal case expecially need a lot of memory.
+Note, that the BOBYQA and COMBI normal case expecially need a lot of memory. However on a desktop with 15GB of RAM there were no problems.
 
 ## Analysis of the Results
 
-To analyse the results it is possible to use the following functions. Though, to run them it is necessary to write inside of the script what energy bounds have been considered.
+With the functions in ./Analysis_Results it is possible to generate the graphs in Figure 1 and 9 of the manuscript once the data are generated again.
 
 ## Insight into BOBYQA
 

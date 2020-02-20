@@ -78,221 +78,70 @@ for i in range(len(L_inf_var)):
     
     if dataset == 'MNIST':
         # Upload  the distilled attacks
-        if BATCH == 0.2 or BATCH == 0.05:    
-            with open(main_dir+'/Results/MNIST/distilled_dist_L_inf_mnist_'+str(BATCH)+'_2 (1).txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist_adv = pickle.load(fp)
-            with open(main_dir+'/Results/MNIST/distilled_gene_L_inf_mnist_'+str(BATCH)+'_2 (1).txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene_adv = pickle.load(fp)
-        else:
-            with open(main_dir+'/Results/MNIST/distilled_dist_L_inf_mnist_'+str(BATCH)+'_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist_adv = pickle.load(fp)
-            with open(main_dir+'/Results/MNIST/distilled_gene_L_inf_mnist_'+str(BATCH)+'_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene_adv = pickle.load(fp)
-        with open(main_dir+'/Results/MNIST/combi_L_inf_'+str(BATCH)+'_max_eval_3000_distilled_.txt',"rb") as fp:
+        with open(main_dir+'/Results/MNIST/boby_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            dist_adv = pickle.load(fp)
+        with open(main_dir+'/Results/MNIST/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            gene_adv = pickle.load(fp)
+        with open(main_dir+'/Results/MNIST/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             combi_adv = pickle.load(fp)
-        with open(main_dir+'/Results/MNIST/Square_summary_dist_L_inf_'+str(BATCH)+'_adv_True.txt',"rb") as fp:
+        with open(main_dir+'/Results/MNIST/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             block_adv = pickle.load(fp)
-             
-    
-        # upload normal attacks
-        with open(main_dir+'/Results/MNIST/dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            
+        
+
+        with open(main_dir+'/Results/MNIST/boby_L_inf_'+str(BATCH)+'_max_eval_300_normal.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             dist = pickle.load(fp)
-        with open(main_dir+'/Results/MNIST/gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/MNIST/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             gene = pickle.load(fp)
-        with open(main_dir+'/Results/MNIST/combi_L_inf_'+str(BATCH)+'_max_eval_3000_normal.txt',"rb") as fp:
+        with open(main_dir+'/Results/MNIST/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             combi = pickle.load(fp)
-        with open(main_dir+'/Results/MNIST/Square_summary_dist_L_inf_'+str(BATCH)+'.txt',"rb") as fp:
+        with open(main_dir+'/Results/MNIST/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             block = pickle.load(fp)
+
              
     elif dataset == 'CIFAR':
 
-        if BATCH == 0.1 or BATCH == 0.05:    
-            with open(main_dir+'/Results/CIFAR/distilled_dist_L_inf_cifar10_'+str(BATCH)+'_2 (1).txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist_adv = pickle.load(fp)
-            with open(main_dir+'/Results/CIFAR/distilled_gene_L_inf_cifar10_'+str(BATCH)+'_2 (1).txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene_adv = pickle.load(fp)
-        elif BATCH == 0.02:
-            with open(main_dir+'/Results/CIFAR/distilled_dist_L_inf_cifar10_0.0225_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist_adv = pickle.load(fp)
-            with open(main_dir+'/Results/CIFAR/distilled_gene_L_inf_cifar10_0.0225_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene_adv = pickle.load(fp)
-        else:
-            with open(main_dir+'/Results/CIFAR/distilled_dist_L_inf_cifar10_'+str(BATCH)+'_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist_adv = pickle.load(fp)
-            with open(main_dir+'/Results/CIFAR/distilled_gene_L_inf_cifar10_'+str(BATCH)+'_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene_adv = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_3000_distilled_.txt',"rb") as fp:
+        with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            dist_adv = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            gene_adv = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             combi_adv = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/Square_summary_dist_L_inf_'+str(BATCH)+'_adv_True.txt',"rb") as fp:
+        with open(main_dir+'/Results/CIFAR/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             block_adv = pickle.load(fp)
-         
+            
         
 
-        with open(main_dir+'/Results/CIFAR/dist_L_inf_cifar10_'+str(BATCH)+'_refined.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_300_normal.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             dist = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/gene_L_inf_cifar10_'+str(BATCH)+'_refined.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             gene = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/CONVALIDATIONcombi_L_inf_'+str(BATCH)+'_max_eval_3000_normal.txt',"rb") as fp:
+        with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             combi = pickle.load(fp)
-        with open(main_dir+'/Results/CIFAR/Square_summary_dist_L_inf_'+str(BATCH)+'_adv_False.txt',"rb") as fp:
+        with open(main_dir+'/Results/CIFAR/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             block = pickle.load(fp)
-
-    elif dataset == 'STL10':
-        if BATCH in [0.03, 0.05, 0.1] :
-            with open(main_dir+'/Results/STL10/simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist1 = pickle.load(fp)
-            with open(main_dir+'/Results/STL10/simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist2 = pickle.load(fp)
-            dist = dist1 + dist2
-        else:
-            with open(main_dir+'/Results/STL10/simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                dist = pickle.load(fp)
-        if BATCH in [0.03, 0.05, 0.1] :
-            with open(main_dir+'/Results/STL10/simple_attack_L_inf_GEN_'+str(BATCH)+'_max_eval_3000_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene1 = pickle.load(fp)
-            with open(main_dir+'/Results/STL10/simple_attack_L_inf_GEN_'+str(BATCH)+'_max_eval_3000.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene2 = pickle.load(fp)
-            gene = gene1 + gene2
-        else:
-            with open(main_dir+'/Results/STL10/simple_attack_L_inf_GEN_'+str(BATCH)+'_max_eval_3000.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene = pickle.load(fp)
-        if BATCH == 0.03:
-            with open(main_dir+'/Results/STL10/combi_simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000_second_NOV.txt', "rb") as fp:
-                combi1 = pickle.load(fp)
-            with open(main_dir+'/Results/STL10/combi_simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000_2.txt', "rb") as fp:
-                combi2 = pickle.load(fp)
-            combi = combi1 + combi2
-        elif BATCH == 0.02:
-            with open(main_dir+'/Results/STL10/combi_simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000_second_NOV.txt', "rb") as fp:
-                combi = pickle.load(fp)
-        else:
-            with open(main_dir+'/Results/STL10/combi_simple_attack_L_inf_'+str(BATCH)+'_max_eval_3000_2.txt', "rb") as fp:
-                combi = pickle.load(fp)
-        if BATCH == 0.03:
-            with open(main_dir+'/Results/STL10/BLOCK_attack_L_inf_'+str(BATCH)+'_max_eval_3000_one_round.txt', "rb") as fp:
-                block = pickle.load(fp)
-        elif BATCH == 0.02:
-            with open(main_dir+'/Results/STL10/BLOCK_attack_L_inf_'+str(BATCH)+'_max_eval_3000_one_round_2.txt', "rb") as fp:
-                block = pickle.load(fp)
-        else:
-            with open(main_dir+'/Results/STL10/BLOCK_attack_L_inf_'+str(BATCH)+'_max_eval_3000.txt', "rb") as fp:
-                block = pickle.load(fp)    
-        # print(dist)
-        dist = block    
-        
         
     elif dataset == 'Imagenet':
-        if not args.only_second:
-            if  BATCH == 0.02:
-                # with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_linear_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     dist = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_over_3.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist = pickle.load(fp)
-            elif BATCH == 0.1:
-                # with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_linear_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     dist = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_over.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist = pickle.load(fp)
-            elif BATCH == 0.01:
-                # with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_linear_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     dist = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_over_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist = pickle.load(fp)
-            else:
-                # with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_linear.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     dist = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_over.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist = pickle.load(fp)
-            if BATCH == 0.1:
-                with open(main_dir+'/Results/Imagenet/GENE_'+str(BATCH)+'_15k_2.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    gene = pickle.load(fp)
-            elif BATCH == 0.02:
-                with open(main_dir+'/Results/Imagenet/GENE_'+str(BATCH)+'_15k_3.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    gene = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/GENE_'+str(BATCH)+'_15k_3_last30.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    gene2 = pickle.load(fp)
-                gene = gene+gene2
-                gene = gene[:100]
-            else:
-                with open(main_dir+'/Results/Imagenet/GENE_'+str(BATCH)+'_15k.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                        gene = pickle.load(fp)
-            # with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_over.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            #     block = pickle.load(fp)
-            with open(main_dir+'/Results/Imagenet/COMBI_'+str(BATCH)+'_FINAL.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    combi = pickle.load(fp)
-            if BATCH == 0.02:
-                # with open(main_dir+'/Results/Imagenet/COMBI_'+str(BATCH)+'_FINAL.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     combi1 = pickle.load(fp)
-                # with open(main_dir+'/Results/Imagenet/COMBI_0.02starting_60_FINAL.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     combi2 = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/COMBI_0.02_1_iter.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    combi3 = pickle.load(fp)
-                combi = combi3 #combi1[:60] + combi2
-                # dist = combi1[:60] + combi2
-
-            if BATCH == 0.01:
-                # with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_linear_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                #     dist = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_FINAL_over_2.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/COMBI_'+str(BATCH)+'_FINAL.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    combi = pickle.load(fp)
+    
+        with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            dist_adv = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+            gene_adv = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
+            combi_adv = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
+            block_adv = pickle.load(fp)
             
-            if second_iter and BATCH<0.1:
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_2nd_500.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist_2 = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/GENE_'+str(BATCH)+'_2nd_500_.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    gene_2 = pickle.load(fp)
-                with open(main_dir+'/Results/Imagenet/COMBI_'+str(BATCH)+'_2nd_500.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    combi_2 = pickle.load(fp)
-                print(second_iter,len(dist_2),len(gene_2), len(combi_2))
-                dist = dist+dist_2
-                gene = gene+gene_2
-                combi = combi+combi_2
-        else:
-            if BATCH != 0.008:
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_2nd_500.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist_2 = pickle.load(fp)
-            else:
-                with open(main_dir+'/Results/Imagenet/BOBY_'+str(BATCH)+'_2nd_50025.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    dist_2 = pickle.load(fp)
-            with open(main_dir+'/Results/Imagenet/GENE_'+str(BATCH)+'_2nd_500_.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                gene_2 = pickle.load(fp)
-            if BATCH != 0.008:
-                with open(main_dir+'/Results/Imagenet/COMBI_'+str(BATCH)+'_2nd_500.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    combi_2 = pickle.load(fp)
-            else:
-                with open(main_dir+'/Results/Imagenet/COMBI_'+str(BATCH)+'_function.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                    combi_2 = pickle.load(fp)
-            print(second_iter,len(dist_2),len(gene_2), len(combi_2))
-            dist = dist_2
-            gene = gene_2
-            combi = combi_2
+        
 
-        with open(main_dir+'/Results/Imagenet/SQUA_'+str(BATCH)+'_targeted_True.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-                block = pickle.load(fp)
-        
-        if args.adv_inception:
-            with open('./Results/Imagenet/ADV_BOBY_'+str(BATCH)+ '_2nd_50050_5.txt',"rb") as fp:
-                boby_adv = pickle.load(fp)
-            with open('./Results/Imagenet/ADV_BOBY_'+str(BATCH)+ '_2nd_50050_5_jumping_50.txt',"rb") as fp:
-                boby_adv_2 = pickle.load(fp)
-                boby_adv =  boby_adv + boby_adv_2
-            # with open('./Results/Imagenet/ADV_BOBY_'+str(BATCH)+ '_2nd_50050.txt',"rb") as fp:
-            #     boby = pickle.load(fp)
-            with open('./Results/Imagenet/ADV_COMBI_'+str(BATCH)+ '_function_jumping_0.txt',"rb") as fp:
-                comb_adv = pickle.load(fp)  
-        
-        # print(dist)
-    elif dataset == 'MiniImageNet':
-        with open(main_dir+'/Results/MiniImageNet/BOBY_'+str(BATCH)+'_FINAL_linear.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_300_normal.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             dist = pickle.load(fp)
-        with open(main_dir+'/Results/MiniImageNet/GENE_'+str(BATCH)+'_15k.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             gene = pickle.load(fp)
-        with open(main_dir+'/Results/MiniImageNet/BOBY_'+str(BATCH)+'_FINAL_over.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            block = pickle.load(fp)
-        with open(main_dir+'/Results/MiniImageNet/COMBI_'+str(BATCH)+'.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
             combi = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/square__L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt',"rb") as fp:
+            block = pickle.load(fp)
 
     list_rand_2 = []
     list_orde_2 = []
@@ -342,13 +191,6 @@ for i in range(len(L_inf_var)):
                 list_combi_2_adv.append(combi_adv[j][0])
             if block_adv[j][0] < maxiter:
                 list_block_2_adv.append(block_adv[j][0])
-    # median_dist.append(np.quantile(dist_tot,quant))
-    # mean_dist.append(np.mean(dist))
-    # median_gene.append(np.quantile(gene_tot,quant))
-    # mean_gene.append(np.mean(gene))
-    # median_combi.append(np.quantile(combi_tot,quant))
-    # mean_combi.append(np.mean(combi))
-    
 
 
 print('Lengths: BOBYQA:{}, GenAttack:{}, COMBI:{}, SQUARE:{}'.format(len(dist), len(gene), len(combi), len(block)))
@@ -455,9 +297,8 @@ adv_inception = args.adv_inception
 print('USING ADV INCEPTION', adv_inception)
 
 
-if (dataset == 'Imagenet' or dataset == 'STL10' or dataset == 'MiniImageNet') and not adv_inception:
-    if dataset=='STL10':
-        maxiter=3000
+if (dataset == 'Imagenet') and not adv_inception:
+    
     generating_cumulative_blocks([list_gene,list_dist,list_combi, list_block],
                                 ['GenAttack','BOBYQA','COMBI','SQUARE'],
                                 total_number,maxiter,10000,L_inf_var[0],saving_title,LEGEND,BATCH==0.01)
