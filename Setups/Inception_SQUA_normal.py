@@ -120,7 +120,7 @@ def square_attack_linf(sess, model, x, y, eps, n_iters, p_init,targeted):
                                 - x_best_curr_window) 
                          < 10**-7) == c*s*s:
                 # the updates are the same across all elements in the square
-                deltas[i_img, center_h:center_h+s, center_w:center_w+s, :] = np.random.choice([-eps, eps], size=[s, s, c])
+                deltas[i_img, center_h:center_h+s, center_w:center_w+s, :] = np.random.choice([-eps, eps], size=[1, 1, c])
 
         x_new = np.clip(x_curr + deltas, min_val, max_val)
 

@@ -24,6 +24,7 @@ def ParsimoniousAttack_function_adv_inception(loss_f, image, values,max_internal
     block_size = args.block_size
     no_hier = args.no_hier
     num_channels = args.num_channels
+    dim_image = args.dim_image
 
     def _split_block(upper_left, lower_right, block_size, channels):
         """Split an image into a set of blocks.
@@ -97,7 +98,9 @@ def ParsimoniousAttack_function_adv_inception(loss_f, image, values,max_internal
     while True:
         # Run batch
         num_batches = int(math.ceil(num_blocks/batch_size))
+        # print('We got ', num_blocks,' blocks and use batches of dimension ', batch_size)
         for i in range(initial_batch, num_batches):
+            # print(i, num_batches)
             try:
                 print("[STATS][L2] rate = {:.5g}, cost = {}, size = {}, loss = {:.5g}, time = {:.5g}".
                         format(i/num_batches, num_queries, block_size, loss, time_end-time_beg))
@@ -137,7 +140,9 @@ def ParsimoniousAttack_function_adv_inception(loss_f, image, values,max_internal
                 return adv_image, num_queries, True, values, noise
 
         # If block size >= 2, then split the iamge into smaller blocks and reconstruct a batch
-        if not no_hier and block_size >= 2:
+        
+        if not no_hier and block_size >= 2 and block_size/256*dim_image>1:
+            # print('CHANGING BLOCK SIZE')
             block_size //= 2
             blocks = _split_block(upper_left, lower_right, block_size, num_channels)
             num_blocks = len(blocks)

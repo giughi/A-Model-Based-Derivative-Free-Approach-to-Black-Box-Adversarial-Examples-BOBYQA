@@ -153,7 +153,7 @@ def square_attack_linf(sess, model, x, y, eps, n_iters, p_init, print_every=200)
         y_curr, margin_min_curr = y, margin_min
         deltas = x_best_curr - x_curr
 
-        p = 1/n_features#p_selection(p_init, i_iter, n_iters)
+        p = p_selection(p_init, i_iter, n_iters)# 1/n_features#
         
         for i_img in range(x_best_curr.shape[0]):
             s = int(round(np.sqrt(p * n_features / c)))

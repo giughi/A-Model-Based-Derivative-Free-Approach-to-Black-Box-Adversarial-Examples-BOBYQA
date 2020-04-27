@@ -64,8 +64,6 @@ def vec2modMatRand3(c, indice, var, RandMatr, depend, b, a, overshoot):
     # we have to clip the values to the boundaries
     temp = np.minimum(b.reshape(-1, ), temp.reshape(-1, ))
     temp = np.maximum(a.reshape(-1, ), temp)
-    # temp[b-temp<temp-a] = b[b-temp<temp-a]
-    # temp[b-temp>temp-a] = a[b-temp>temp-a]
     temp = temp.reshape(var.shape)
     return temp
 
@@ -179,7 +177,7 @@ def associate_block(A, i, j, k, nn_i, nn_j, association):
             A[0, ii, jj, k] = int(association)
     return A
 
-def matr_subregions_division(var, n, k):
+def matr_subregions_division(var, n, k, img_size):
     """
     This allows to compute the matrix fo dimension equal to the image with the
     region of beloging for each supervariable with only a block composition
@@ -192,7 +190,7 @@ def matr_subregions_division(var, n, k):
 
     # times the we will possibly 
 
-    nn_up = np.floor(299/n)
+    nn_up = np.floor(img_size/n)
     # We have to approximate it to the nearest 2 power
     if int(nn_up) in [74,37]:
         if nn_up == 74:
@@ -202,10 +200,10 @@ def matr_subregions_division(var, n, k):
         # print('nn_up ', nn_up)
 
 
-    nn_do = 299 - nn_up*(n-1)  #np.mod(299,n)-1#np.floor(299/n)
+    nn_do = img_size - nn_up*(n-1) 
     if nn_do <=0:
         nn_up = nn_up-1
-        nn_do = 299 - nn_up*(n-1)
+        nn_do = img_size - nn_up*(n-1)
     
     association = 0
     for k in range(3):
@@ -222,7 +220,7 @@ def matr_subregions_division(var, n, k):
 
     return np.array([A])
 
-def matr_subregions_division_2(var, n, partition, k, Renew):
+def matr_subregions_division_2(var, n, partition, k, Renew,img_size):
     """
     This allows to compute the matrix fo dimension equal to the image with the
     region of beloging for each supervariable with only a block composition
@@ -236,17 +234,24 @@ def matr_subregions_division_2(var, n, partition, k, Renew):
     # print('Initial Partition', partition)
     if partition is None:
         partition = []
-        nn_up = np.ceil(299/n)
+        nn_up = np.ceil(img_size/n)
         for i in range(n):
             partition.append(i*nn_up)
-        partition.append(298)
-    elif Renew and n<290:
+        partition.append(img_size)
+
+    elif Renew and ((n<290 and img_size==299) or img_size<200):
         partition_ = [0]
         for i in range(len(partition)-1):
             partition_.append(np.ceil((partition[i+1]+partition[i])/2))
             partition_.append(partition[i+1])
         partition = partition_
 
+    if n>=img_size:
+        partition = []
+        nn_up = 1
+        for i in range(n):
+            partition.append(i*nn_up)
+        partition.append(img_size)
     # check that the number of intervals is n
     if len(partition)!=n+1:
         print('----- WARNING: the partition is not exact')
@@ -261,7 +266,7 @@ def matr_subregions_division_2(var, n, partition, k, Renew):
                 dj = partition[j+1]-partition[j]
                 A = associate_block(A, xi, xj, k, di, dj, association)
                 association += 1
-    # print(partition)
+    print(partition)
     return np.array([A]), partition
 
 
@@ -418,47 +423,51 @@ class BlackBox_BOBYQA:
                 xs =  np.divide( -(up+down),
                                 (up-down))
                 x_o[i] = np.clip(xs[max_ind],-1,1)
+                # print(x_o[i])
 
         else:
             b = self.modifier_up[indice]
             a = self.modifier_down[indice]
         bb = self.modifier_up
         aa = self.modifier_down
-        # print(indice)
+        # print(indice)img
         opt_fun = Objfun(lambda c: self.loss_f(img, vec2modMatRand3(c, indice, var, Random_Matrix, super_dependency, bb, aa,
                                                                self.overshoot), only_loss=True)[0])
         initial_loss = opt_fun(x_o)
-        # if initial_loss != self.l:
-        #     print(' COULD NOT REBUILD pert', initial_loss-self.l)
+        if initial_loss != self.l:
+            print(' COULD NOT REBUILD pert', initial_loss-self.l)
         user_params = {'init.random_initial_directions':False, 'init.random_directions_make_orthogonal':False}
         soln = pybobyqa.solve(opt_fun, x_o, rhobeg=np.min(b-a)/3,
                               bounds=(a, b), maxfun=nn*1.2,
                               rhoend=np.min(b-a)/6,
                               npt=nn+1, scaling_within_bounds=False,
                               user_params=user_params)
-        summary = opt_fun.get_summary(with_xs=True)
+        summary = opt_fun.get_summary(with_xs=False)
         minimiser = np.min(summary['fvals'])
-        real_oe = self.loss_f(img, vec2modMatRand3(soln.x, indice, var, Random_Matrix, super_dependency, bb, aa,
-                                                               self.overshoot), only_loss=True)
-        if (minimiser != real_oe) and (initial_loss>minimiser):
+        # real_oe = self.loss_f(img, vec2modMatRand3(soln.x, indice, var, Random_Matrix, super_dependency, bb, aa,
+        #                                                        self.overshoot), only_loss=True)
+        # print('minimser', minimiser)
+        if (minimiser != soln.f): # and (initial_loss>minimiser):
             print('########################## ERRRORROR')
         # print(a,b)
         evaluations = soln.nf
-        
+        print('minimser', minimiser)
         # print('==========   a  ', a)
         # print('==========   b  ', b)
         # print('========== soln ', soln.x)
         # print(soln)
 
         nimgs = vec2modMatRand3(soln.x, indice, var, Random_Matrix, super_dependency, bb, aa, self.overshoot)
+        
+        
         nimg2 = nimgs.copy()
         nimg2.reshape(-1,)[bb-nimgs.reshape(-1,)<nimgs.reshape(-1,)-aa] = bb[bb-nimgs.reshape(-1,)<nimgs.reshape(-1,)-aa]
         nimg2.reshape(-1,)[bb-nimgs.reshape(-1,)>nimgs.reshape(-1,)-aa] = aa[bb-nimgs.reshape(-1,)>nimgs.reshape(-1,)-aa]
         
         
-        distance = self.loss_f(img,nimgs, only_loss=True)
+        distance = [minimiser] #self.loss_f(img,nimgs, only_loss=True)
         distance2 = self.loss_f(img, nimg2, only_loss=True)
-
+        # print(distance, real_oe)
         if soln.f > initial_loss:
             print('The optimisation is not working. THe diff is ', initial_loss - soln.f)
             return initial_loss, evaluations + 2, var, times, summary
@@ -550,7 +559,7 @@ class BlackBox_BOBYQA:
             iteration_scale = self.iteration_scale
             iteration_domain = np.mod(iteration_scale, (self.use_var_len//self.batch_size + 1))
             super_dependency, permutation = matr_subregions_division_2(np.zeros(np.array([img]).shape),
-                                                                self.small_x, permutation, 1,False)
+                                                                self.small_x, permutation, 1,False, self.image_size)
 
         global_summary = []
         adv = 0 * img
@@ -617,7 +626,7 @@ class BlackBox_BOBYQA:
                 # We have to restrict the random matrix and the
                 KK = 1
                 super_dependency, permutation = matr_subregions_division_2(np.zeros(np.array([img]).shape),
-                                                            self.small_x, permutation, KK, force_renew)
+                                                            self.small_x, permutation, KK, force_renew, self.image_size)
 
                 Random_Matrix = np.ones(np.array([img]).shape)
 
@@ -648,7 +657,8 @@ class BlackBox_BOBYQA:
             img = img + adv
             eval_costs += evaluations
             internal_eval_costs += evaluations
-
+            difference = np.max(img-img0)
+            print('=====================> max diff', difference)
             adv= 0*adv
 
             loss, output, distance = self.loss_f(img, np.array([adv]))
