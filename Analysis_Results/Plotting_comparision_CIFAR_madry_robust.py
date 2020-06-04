@@ -35,7 +35,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
 
 dataset = 'CIFAR'
-L_inf_var = [0.05, 0.1,0.15,0.2]
+L_inf_var = [0.03, 0.05, 0.1,0.15]
 adversary = args.Adversary
 saving = args.save
 plot_type = args.plot_type
@@ -79,13 +79,14 @@ for i in range(len(L_inf_var)):
         
     
 
-    with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+    with open(main_dir+'/Results/CIFAR/boby_adversary_True_interpolation_block_eps_'+str(BATCH)+'_max_eval_3000_n_channels_3_over_over_max_f_1.4_rounding_False.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
         dist = pickle.load(fp)
     # with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
     #     gene = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_3000_madri.txt',"rb") as fp:
+    # Results/CIFAR/
+    with open(main_dir+'/Results/CIFAR/combi_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False.txt',"rb") as fp:
         combi = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/square_NO_RAND_INIT_L_inf_'+str(BATCH)+'_max_eval_3000_madry.txt',"rb") as fp:
+    with open(main_dir+'/Results/CIFAR/square_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_p_init_0.1.txt',"rb") as fp:
         block = pickle.load(fp)
 
     total_number = np.minimum(np.minimum(len(dist), len(block)), len(combi))
@@ -152,7 +153,7 @@ for j in range(total_number):
 
 # if len(block)<total_number:
 
-saving_title=main_dir+'/Results/'+dataset+'/Plots/Energy_performance'+title
+saving_title=main_dir+'/Results/'+dataset+'/Plots/Energy_performance_2'+title
 
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
@@ -212,5 +213,5 @@ plt.ylabel('SR',fontsize=18)
 # if LEGEND:
 # plt.text(0.058,0.4,'Adv', fontsize=16)
 # plt.text(0.047,0.4,'Norm', fontsize=16)
-
+print(saving_title+'.pdf')
 fig.savefig(saving_title+'.pdf',bbox_inches='tight')

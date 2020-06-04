@@ -78,17 +78,17 @@ for i in range(len(L_inf_var)):
     BATCH = L_inf_var[i]
     
     
-        
-        
-
-    with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry_retry_normal_condition.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+    with open(main_dir+'/Results/CIFAR/boby_adversary_True_interpolation_block_eps_'+str(BATCH)+'_max_eval_3000_n_channels_3_over_over_max_f_1._rounding_False.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
         dist = pickle.load(fp)
+          
+    # with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry_maxfun_1_4_rescaled_01.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+    #     dist = pickle.load(fp)
 
     # with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
     #     gene = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/combi_L_inf_'+str(BATCH)+'_max_eval_3000_madri.txt',"rb") as fp:
+    with open(main_dir+'/Results/CIFAR/combi_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False.txt',"rb") as fp:
         combi = pickle.load(fp)
-    with open(main_dir+'/Results/CIFAR/square_L_inf_'+str(BATCH)+'_max_eval_3000_madry.txt',"rb") as fp:
+    with open(main_dir+'/Results/CIFAR/square_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_p_init_0.1.txt',"rb") as fp:
         block = pickle.load(fp)
 
 

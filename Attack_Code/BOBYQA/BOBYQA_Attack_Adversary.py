@@ -330,7 +330,7 @@ class BlackBox_BOBYQA:
         self.perturbed_img = perturbed_img
         self.ord_domain = ord_domain
         self.iteration_scale = iteration_scale
-        self.image0 = image0
+        self.image0 = image0.astype(np.float32)
 
         # each batch has a different modifier value (see below) to evaluate
         single_shape = (image_size, image_size, num_channels)
@@ -401,11 +401,13 @@ class BlackBox_BOBYQA:
         if (iteration+1)*nn <= NN:
             var_indice = ord_domain[iteration*nn: (iteration+1)*nn]
         else:
-            var_indice = ord_domain[list(range(iteration*nn, NN)) + 
-                                    list(range(0, (self.batch_size-(NN-iteration*nn))))]
+            var_indice = ord_domain[list(range(iteration*nn, NN))]# + 
+                                    # list(range(0, (self.batch_size(NN-iteration*nn))))]
+            nn = NN - iteration*nn
         
         # print('======> optimised indices', var_indice)
         indice = self.var_list[var_indice]
+        print(indice)
         x_o = np.zeros(nn,)
         # Changing the bounds according to the problem being resized or not
         if self.use_resize:
@@ -433,16 +435,19 @@ class BlackBox_BOBYQA:
         # print(indice)img
         opt_fun = Objfun(lambda c: self.loss_f(img, vec2modMatRand3(c, indice, var, Random_Matrix, super_dependency, bb, aa,
                                                                self.overshoot), only_loss=True)[0])
+        print(x_o)
         initial_loss = opt_fun(x_o)
         if initial_loss != self.l:
             print(' COULD NOT REBUILD pert', initial_loss-self.l)
-        user_params = {'init.random_initial_directions':False, 'init.random_directions_make_orthogonal':False}
+        user_params = {'init.random_initial_directions':False,
+                        'init.random_directions_make_orthogonal':False}
         soln = pybobyqa.solve(opt_fun, x_o, rhobeg=np.min(b-a)/3,
-                              bounds=(a, b), maxfun=nn*1.2,
+                              bounds=(a, b), maxfun=nn*1.4,
                               rhoend=np.min(b-a)/6,
                               npt=nn+1, scaling_within_bounds=False,
                               user_params=user_params)
         summary = opt_fun.get_summary(with_xs=False)
+
         minimiser = np.min(summary['fvals'])
         # real_oe = self.loss_f(img, vec2modMatRand3(soln.x, indice, var, Random_Matrix, super_dependency, bb, aa,
         #                                                        self.overshoot), only_loss=True)
@@ -514,11 +519,8 @@ class BlackBox_BOBYQA:
             steps = [0]
             for d in dimen[:-1]:
                 n_var = d**2 * 3
-                n_step = np.ceil(n_var/self.batch_size)
+                n_step = np.ceil(np.divide(n_var,self.batch_size))
                 steps.append(steps[-1] + n_step)
-
-            # print('Dimen', dimen)
-            # print('Steps', steps)
         else:
             steps = [0]
             dimen = [298]

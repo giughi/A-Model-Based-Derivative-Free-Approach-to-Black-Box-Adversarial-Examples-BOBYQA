@@ -28,7 +28,8 @@ from PIL import Image
 import torch as ch
 from robustness.datasets import CIFAR as CIFAR_robustness
 from robustness.model_utils import make_and_restore_model
-
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 flags = tf.app.flags
 flags.DEFINE_string('dataset', 'cifar10', 'model name')
 flags.DEFINE_integer('test_size', 1, 'Number of test images.')
@@ -88,7 +89,7 @@ class Model_Class():
     def predict(self, img):
         img = np.moveaxis(img,3,1)
         img = ch.tensor(img).float()
-        logit,_ =self.model(img) 
+        logit,_ =self.model(img+0.5) 
         return logit.detach().numpy()
 
 def softmax(x):
@@ -175,23 +176,12 @@ if __name__ == '__main__':
     model.eval()
     model = Model_Class(model.float())
 
-    # _, test_loader = ds.make_loaders(workers=4, batch_size=1)
-    # _ (im,label) = next(enumerate(test_loader))
     
     print('Done...')
 
     args['numimg'] = FLAGS.test_size
     print('Using', args['numimg'], 'test images with ', L_inf_var,' energy')
-            
-    # attack_dist = BlackBox(model, batch_size=BATCH, max_iterations=args['maxiter'], print_every=args['print_every'],
-    #                 early_stop_iters=args['early_stop_iters'], confidence=0, targeted=not args['untargeted'],
-    #                 use_resize=args['use_resize'],L_inf=L_inf_var, BOBYQA=True,
-    #                 max_eval = MAX_EVAL, q = q)
-
-
-    
-
-    
+                
     print('Generate data')
     all_inputs, all_targets, all_labels, all_true_ids = generate_data(data, samples=args['numimg'], targeted=not args['untargeted'],
                                     start=args['firstimg'])
@@ -200,15 +190,12 @@ if __name__ == '__main__':
     img_no = 0
     total_success = 0
     
-    if FLAGS.dataset == 'mnist':
-        saving_dir = main_dir + '/Results/MNIST/' + FLAGS.description
-    else:
-        saving_dir = main_dir + '/Results/CIFAR/' + FLAGS.description
+    saving_dir = main_dir + '/Results/CIFAR/' + FLAGS.description
     
 
     case = '_madry'
 
-    saving_name_boby = saving_dir+'boby_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals) + case + '_retry_normal_condition.txt'
+    saving_name_boby = saving_dir+'boby_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals) + case + '_maxfun_1_4_rescaled_01_test.txt'
     # saving_name_gene = saving_dir+'gene_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals) +'.txt'
     
     already_done_init = 0
@@ -246,23 +233,13 @@ if __name__ == '__main__':
         print('###################################')
         print("true labels:", np.argmax(labels), labels)
         print("target:", np.argmax(targets), targets)
-        # test if the image is correctly classified
-        # print(inputs.shape)
-        # inputs = np.moveaxis(inputs,3,1)
-        # # print(inputs.shape)
-        # inputs_tensor = ch.tensor(inputs).float()
-        # print(ch.type(inputs))
-        # print(type(inputs_tensor))
+        print(np.max(inputs), np.min(inputs))
 
         original_predict = model.predict(inputs)
-        # original_predict = original_predict
         original_predict = np.squeeze(original_predict)
         original_prob = np.sort(original_predict)
         original_class = np.argsort(original_predict)
-        # print("original probabilities:", original_prob[-1:-6:-1])
         print("original classification:", original_class[-1:-6:-1])
-        # print("original probabilities (most unlikely):", original_prob[:6])
-        # print("original classification (most unlikely):", original_class[:6])
         if original_class[-1] != np.argmax(labels):
             print("skip wrongly classified image no. {}, original class {}, classified as {}".format(i, np.argmax(labels), original_class[-1]))
             continue
@@ -284,7 +261,8 @@ if __name__ == '__main__':
                 logits_ = model.predict([img + pert[i]])
                 probs_ = softmax(logits_[0])
                 indices = np.argmax(targets)
-                lll.append(-np.log(probs_[indices] + 1e-10) + np.log(np.sum(probs_)- probs_[indices] + 1e-10))
+                lll.append(-np.log(probs_[indices] + 1e-10) + np.log(np.sum(probs_)
+                                                                    - probs_[indices] + 1e-10))
                 preds_l.append(np.argmax(logits_[0]))
                 distances.append(np.max(probs_)-probs_[indices])
             
@@ -305,9 +283,6 @@ if __name__ == '__main__':
 
         adv_dist, eval_costs_dist, summary, _, _ = result
 
-        # # adversarial generation
-        # adv_dist, eval_costs_dist, summary = attack_dist.attack_batch(inputs, targets)
-        
         if len(adv_dist.shape) == 3:
             adv_dist = adv_dist.reshape((1,) + adv_dist.shape)
         
@@ -327,12 +302,7 @@ if __name__ == '__main__':
         print("[STATS][L1] total = {}, seq = {}, batch = {}prev_class = {}, new_class = {}".format(img_no, i, BATCH, original_class[-1], adversarial_class))
         sys.stdout.flush()
 
-        # if FLAGS.internal_summaries:
-        #     global_summary.append(summary)
-        #     with open(saving_dir+'summary_dist_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals) +'_batch_'+str(BATCH)+'.txt', "wb") as fp:
-        #         pickle.dump(global_summary, fp)
-
-        with open(saving_name_boby , "wb") as fp:
-                pickle.dump(list_boby, fp)
+        # with open(saving_name_boby , "wb") as fp:
+        #         pickle.dump(list_boby, fp)
 
         print('saved')

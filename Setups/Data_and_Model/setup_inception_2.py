@@ -315,21 +315,21 @@ def main(_):
       print('%s (score = %.5f)' % (human_string, score))
 
 
-def readimg(ff, path):
+def readimg(ff, path, dimension):
   #f = "../imagenetdata/imgs/"+ff
   f = os.path.join(path, ff)
   img = scipy.misc.imread(f)
   # skip small images (image should be at least 299x299)
-  if img.shape[0] < 299 or img.shape[1] < 299:
+  if img.shape[0] < dimension or img.shape[1] < dimension:
     return None
-  img = np.array(scipy.misc.imresize(img,(299,299)),dtype=np.float32)/255-.5
-  if img.shape != (299, 299, 3):
+  img = np.array(scipy.misc.imresize(img,(dimension,dimension)),dtype=np.float32)/255-.5
+  if img.shape != (dimension, dimension, 3):
     return None
-  return [img, int(ff.split(".")[0]), f]
+  return [img, int(ff.split(".")[0])-1, f]
 
 
 class ImageNet:
-  def __init__(self, path='images'):
+  def __init__(self, path='images', dimension=299):
     # dir_path = os.path.dirname(os.path.realpath(__file__))
     # main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
     #from multiprocessing import Pool
@@ -339,7 +339,7 @@ class ImageNet:
     # print(file_list[0:10])
     random.seed(10)
     random.shuffle(file_list)
-    read_img_fn = lambda x: readimg(x, path)
+    read_img_fn = lambda x: readimg(x, path, dimension)
 
     r = [read_img_fn(x) for x in file_list[800:1300]]
     # print(file_list[:200])

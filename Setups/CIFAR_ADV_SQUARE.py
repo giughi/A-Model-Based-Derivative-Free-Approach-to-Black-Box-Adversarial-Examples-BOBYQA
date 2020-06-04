@@ -32,7 +32,6 @@ from robustness.datasets import CIFAR as CIFAR_robustness
 from robustness.model_utils import make_and_restore_model
 # python Setups/Generation_Comparision_norm_robust_SQUARE_Attack.py  --Adversary_trained=True --dataset=cifar10 --eps=0.1
 
-# In[2]:
 flags = tf.app.flags
 flags.DEFINE_float('eps', 0.1, 'epsilon')
 flags.DEFINE_string('dataset', 'cifar10', 'model name')
@@ -95,7 +94,7 @@ class Model_Class():
         # print(self.iters)
         img = np.moveaxis(img,3,1)
         img = ch.tensor(img).float()
-        logit,_ =self.model(img)
+        logit,_ =self.model(img + 0.5)
         return logit[0].detach().numpy()
     
     def loss(self, y, logits, targeted=False, loss_type='margin_loss'):
@@ -384,7 +383,7 @@ if __name__ == '__main__':
 
     case ='_madry'
     
-    saving_name_dist = saving_dir + 'square_NO_RAND_INIT_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals)+ case +'.txt'
+    saving_name_dist = saving_dir + 'square_NO_RAND_INIT_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals)+ case +'_resized_01.txt'
 
     # with tf.Session(config=session_conf) as sess:
     # #     use_log = args['use_zvalue']

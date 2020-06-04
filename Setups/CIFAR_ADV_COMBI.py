@@ -69,9 +69,12 @@ class Model_Class():
     def predict(self, img):
         img = np.moveaxis(img,2,0)
         img = ch.tensor([img]).float()
-        logit,_ =self.model(img) 
+        logit,_ =self.model(img + 0.5) 
         return logit.detach().numpy()
 
+# def softmax(x):
+#     e_x = np.exp(x - np.max(x))
+#     return e_x / e_x.sum(axis=0)
 
 def generate_data(data, samples, targeted=True, start=0):
     """
@@ -179,7 +182,7 @@ if __name__ == '__main__':
         saving_dir = main_dir + '/Results/CIFAR/' + FLAGS.description
 
     case = '_madri'
-    saving_name = saving_dir+'combi_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals)+ case +'.txt'
+    saving_name = saving_dir+'combi_L_inf_'+str(L_inf_var)+'_max_eval_'+ str(FLAGS.max_evals)+ case +'_resized_01.txt'
     
     # Uploading the previous results if there are
     already_done = 0
