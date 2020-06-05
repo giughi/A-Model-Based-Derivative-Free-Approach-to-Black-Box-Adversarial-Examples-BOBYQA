@@ -209,7 +209,6 @@ if __name__ == '__main__':
                             '_subspace_attack_' + str(FLAGS.subspace_attack) +
                             '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
                             FLAGS.description + '.txt')  
-
     
     # Loading the previous results obtained with the same saving directory
     already_done = 0
@@ -265,7 +264,8 @@ if __name__ == '__main__':
                                     print_every=FLAGS.print_every, use_resize=FLAGS.use_resize, 
                                     eps=FLAGS.eps, max_eval=FLAGS.max_evals,
                                     over=FLAGS.over, rounding=FLAGS.rounding,
-                                    max_f=FLAGS.max_f)
+                                    max_f=FLAGS.max_f, subspace_attack=FLAGS.subspace_attack,
+                                    subspace_dim=FLAGS.subspace_dimension)
 
             result = attack.attack_batch(inputs, targets)
         elif FLAGS.attack=='combi':
@@ -277,7 +277,8 @@ if __name__ == '__main__':
                                     eps = FLAGS.eps, n_iters=FLAGS.max_evals, 
                                     p_init=FLAGS.p_init, targeted=True, 
                                     loss_type='cross_entropy', 
-                                    print_every=FLAGS.print_every)
+                                    print_every=FLAGS.print_every,subspace_attack=FLAGS.subspace_attack,
+                                    subspace_dim=FLAGS.subspace_dimension, img=inputs)
                                     
 
         adv, eval_costs, summary, Success = result

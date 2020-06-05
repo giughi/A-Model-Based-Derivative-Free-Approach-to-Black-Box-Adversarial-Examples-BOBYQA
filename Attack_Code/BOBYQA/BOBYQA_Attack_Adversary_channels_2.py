@@ -150,7 +150,7 @@ def matr_subregions_division(img_size, num_channels, n, channel_size):
     :param n: Dimension of the super grid that we are using (n,n,c).
     :param channel_size: number of channels c in the pertubation.
 
-    :return: The matrix with the supervariable tto which each pixel belongs
+    :return: The matrix with the supervariable index to which each pixel belongs
     """
     A = np.zeros((1,img_size,img_size,num_channels))
     partition = []
@@ -189,7 +189,8 @@ def finding_indices(dependency, index):
 class BlackBox_BOBYQA:
     def __init__(self, loss_f, batch_size=1, interpolation='block', n_channels_input=3,
                  print_every=100, use_resize=False, eps=0.15, max_eval=1e5, 
-                 over='over', rounding=True, max_f=1.2):
+                 over='over', rounding=True, max_f=1.2, subspace_attack=False,
+                 subspace_dim=None):
         """
         The BOBYQA attack.
 
@@ -210,6 +211,8 @@ class BlackBox_BOBYQA:
         self.target = None
         self.print_every = print_every
         self.batch_size = batch_size
+        self.subspace_attack = subspace_attack
+        self.subspace_dim = subspace_dim
 
         self.small_x = None
         self.small_y = None
@@ -242,6 +245,9 @@ class BlackBox_BOBYQA:
         # build new inputs, based on current variable value
         var = 0*np.array([img])
         NN = self.var_list.size
+        if self.subspace_attack:
+            NN = len(ord_domain)
+    
         if len(ord_domain)<self.batch_size:
             nn = len(ord_domain)
         else:
@@ -250,10 +256,18 @@ class BlackBox_BOBYQA:
         # So it is already limited to the variable's dimension
         if (iteration+1)*nn <= NN:
             var_indice = ord_domain[iteration*nn: (iteration+1)*nn]
+        elif self.subspace_attack:
+            lower  = np.mod((iteration)*nn,NN)
+            upper  = np.mod((iteration+1)*nn,NN)
+            if upper > lower:
+                # if the right and left bound are not inverted by the mod operation
+                var_indice = ord_domain[lower: upper]
+            else:
+                var_indice = ord_domain[lower:]
+                var_indice = np.concatenate((var_indice, ord_domain[:upper]))
         else:
             var_indice = ord_domain[list(range(iteration*nn, NN))]
-            nn = NN - iteration*nn#+ 
-                                    # list(range(0, (self.batch_size-(NN-iteration*nn))))]
+            nn = NN - iteration*nn
         indice = self.var_list[var_indice]
         x_o = np.zeros(nn,)
         # Define the bounds of the optimisation variable
@@ -342,7 +356,7 @@ class BlackBox_BOBYQA:
 
         # define the dimension of the perturbation that have to be considered
         init_width = self.n_channels_input
-        if self.use_resize:
+        if self.use_resize and not self.subspace_attack:
             dimen = np.power(2,np.arange(1, np.ceil(np.log2(self.image_size)), 
                                             dtype=np.int)
                             )
@@ -361,7 +375,7 @@ class BlackBox_BOBYQA:
             width.append(3)
         else:
             steps = [0]
-            dimen = [self.image_size-1]
+            dimen = [self.image_size]
             width = [3]
 
         # initialise the modifier
@@ -372,8 +386,8 @@ class BlackBox_BOBYQA:
 
         # intialise the parameters
         eval_costs = 0       
-        ord_domain = np.random.choice(self.var_list.size, self.var_list.size, 
-                                      replace=False, p=self.sample_prob)
+        # ord_domain = np.random.choice(self.var_list.size, self.var_list.size, 
+        #                               replace=False, p=self.sample_prob)
         iteration_scale = 0
         iteration_domain = 0
         step = -1
@@ -427,6 +441,12 @@ class BlackBox_BOBYQA:
                 iteration_domain = 0
                 force_renew = True
 
+            if self.subspace_attack:
+                # we need to reshufle the subspace every time we have gone through it
+                if np.round(step*self.batch_size/self.subspace_dim) != np.round((step-1)*self.batch_size/self.subspace_dim):
+                    print('reshuffling the order')
+                    force_renew = True
+
             if  force_renew:  
                 super_dependency = matr_subregions_division(self.image_size, self.num_channels,
                                                             self.small_x, self.small_channels
@@ -434,7 +454,12 @@ class BlackBox_BOBYQA:
                 prob = image_region_importance(cv2.resize(img, (self.small_x, self.small_y), 
                                                           interpolation=cv2.INTER_LINEAR),
                                               self.small_channels).reshape(-1,)
-                ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p=prob)
+                if not self.subspace_attack:
+                    ord_domain = np.random.choice(self.use_var_len, self.use_var_len, replace=False, p=prob)
+                else:
+                    top_n_indices = np.argsort(prob)[-self.subspace_dim:]
+                    ord_domain = np.random.choice(top_n_indices, self.subspace_dim, replace=False, 
+                                                  p=prob[top_n_indices]/np.sum(prob[top_n_indices]))
             l, evaluations, nimg, summary = self.blackbox_optimizer(iteration_domain,
                                                                     ord_domain,
                                                                     super_dependency,

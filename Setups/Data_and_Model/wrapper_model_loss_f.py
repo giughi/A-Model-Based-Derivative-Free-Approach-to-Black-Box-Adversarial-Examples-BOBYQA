@@ -14,14 +14,15 @@ def patch_single_output(x, single_output):
 #Models
 
 class Model_Class_combi():
-    def __init__(self, model):
+    def __init__(self, model,single_output):
         self.model = model
+        self.single_output = single_output
 
     def predict(self, img):
         img = np.moveaxis(img,2,0)
-        img = ch.tensor([img]).float()
-        logit,_ =self.model(img + 0.5) 
-        return logit.detach().numpy()
+        img = ch.tensor([img]).float().cuda()
+        logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
+        return logit.cpu().detach().numpy()
 
 class Model_Class_boby():
     def __init__(self, model,single_output):
@@ -36,14 +37,15 @@ class Model_Class_boby():
         return logit.cpu().detach().numpy()
 
 class Model_Class_square():
-    def __init__(self, model):
+    def __init__(self, model,single_output):
         self.model = model
+        self.single_output = single_output
 
     def predict(self, img):
         img = np.moveaxis(img,3,1)
-        img = ch.tensor(img).float()
-        logit,_ =self.model(img + 0.5)
-        return logit[0].detach().numpy()
+        img = ch.tensor(img).float().cuda()
+        logit,_ =patch_single_output(self.model(img+0.5), self.single_output)
+        return logit[0].cpu().detach().numpy()
     
     def loss(self, y, logits, targeted=False, loss_type='margin_loss'):
         """ Implements the margin loss (difference between the correct and 2nd best class). """

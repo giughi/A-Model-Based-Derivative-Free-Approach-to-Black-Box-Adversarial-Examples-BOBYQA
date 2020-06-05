@@ -20,6 +20,8 @@ def LocalSearchHelper(loss_f, image, noise, blocks, tot_num_queries, label, args
     targeted = args.targeted
     max_queries = args.max_evals
     no_hier = args.no_hier
+    subspace_attack = args.subspace_attack
+    subspace_dim = args.subspace_dimension
     # Network setting
 
     def _perturb_image(width, height, image, noise):
@@ -79,7 +81,7 @@ def LocalSearchHelper(loss_f, image, noise, blocks, tot_num_queries, label, args
     losses_int, preds_int = loss_f(image_batch)
     
     num_queries += 1
-    curr_loss = losses_int
+    curr_loss = losses_int[0]
 
     # Early stopping
     if targeted:
@@ -88,7 +90,6 @@ def LocalSearchHelper(loss_f, image, noise, blocks, tot_num_queries, label, args
     else:
         if preds_int != label:
             return noise, num_queries, curr_loss, True
-    # time_beg_main_loop = time.time()
     # Main loop
     for iteration in range(max_iters):
         indices,  = np.where(A==0)
@@ -101,7 +102,7 @@ def LocalSearchHelper(loss_f, image, noise, blocks, tot_num_queries, label, args
             bend = min(bstart + batch_size, len(indices))
 
             image_batch = np.zeros([bend-bstart, width, height, channels], np.float32)
-            if no_hier:
+            if no_hier or subspace_attack:
                 noise_batch = np.zeros([bend-bstart, width, height, channels], np.float32)
             else:
                 noise_batch = np.zeros([bend-bstart, 256, 256, channels], np.float32)
@@ -186,7 +187,7 @@ def LocalSearchHelper(loss_f, image, noise, blocks, tot_num_queries, label, args
             bstart = ibatch * batch_size
             bend = min(bstart + batch_size, len(indices))
             image_batch = np.zeros([bend-bstart, width, height, channels], np.float32)
-            if no_hier:
+            if no_hier or subspace_attack:
                 noise_batch = np.zeros([bend-bstart, width, height, channels], np.float32)
             else:
                 noise_batch = np.zeros([bend-bstart, 256, 256, channels], np.float32)
