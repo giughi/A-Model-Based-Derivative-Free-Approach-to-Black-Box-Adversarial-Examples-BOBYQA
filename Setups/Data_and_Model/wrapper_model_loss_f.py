@@ -31,7 +31,7 @@ class Model_Class_boby():
 
     def predict(self, img):
         img = np.moveaxis(img,3,1)
-        img = ch.tensor(img).float().cuda()
+        img = ch.from_numpy(img).to(device='cuda',dtype=ch.float)
         logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
         # print('=========>',logit)
         return logit.cpu().detach().numpy()
@@ -57,6 +57,57 @@ class Model_Class_square():
             margin = diff.min(0, keepdims=True)
             loss_ = margin * -1 if targeted else margin
         elif loss_type == 'cross_entropy':
+            print(len(logits), len(y))
+            probs = softmax_square(logits)
+            loss_ = -np.log((probs*y).sum()+1e-10) + np.log(np.sum(probs)- (probs*y).sum() + 1e-10)
+            loss_ = loss_ * -1 if not targeted else loss_
+        else:
+            raise ValueError('Wrong loss.')
+        return loss_.flatten()
+
+class Model_Class_combi_cpu():
+    def __init__(self, model,single_output):
+        self.model = model
+        self.single_output = single_output
+
+    def predict(self, img):
+        img = np.moveaxis(img,2,0)
+        img = ch.tensor([img]).float()
+        logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
+        return logit.detach().numpy()
+
+class Model_Class_boby_cpu():
+    def __init__(self, model,single_output):
+        self.model = model
+        self.single_output = single_output
+
+    def predict(self, img):
+        img = np.moveaxis(img,3,1)
+        img = ch.tensor(img).float()
+        logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
+        return logit.detach().numpy()
+
+class Model_Class_square_cpu():
+    def __init__(self, model,single_output):
+        self.model = model
+        self.single_output = single_output
+
+    def predict(self, img):
+        img = np.moveaxis(img,3,1)
+        img = ch.tensor(img).float()
+        logit,_ =patch_single_output(self.model(img+0.5), self.single_output)
+        return logit[0].detach().numpy()
+    
+    def loss(self, y, logits, targeted=False, loss_type='margin_loss'):
+        """ Implements the margin loss (difference between the correct and 2nd best class). """
+        if loss_type == 'margin_loss':
+            probs = softmax_square(logits)
+            preds_correct_class = (probs * y).sum(0, keepdims=True)
+            diff = preds_correct_class - probs  
+            diff[y] = np.inf  
+            margin = diff.min(0, keepdims=True)
+            loss_ = margin * -1 if targeted else margin
+        elif loss_type == 'cross_entropy':
             probs = softmax_square(logits)
             loss_ = -np.log((probs*y).sum()+1e-10) + np.log(np.sum(probs)- (probs*y).sum() + 1e-10)
             loss_ = loss_ * -1 if not targeted else loss_
@@ -68,13 +119,21 @@ def softmax_square(x):
     e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
     return e_x / e_x.sum(axis=0, keepdims=True)
 
-def wrapper_model(model, attack, single_output):
-    if attack =='boby':
-        return Model_Class_boby(model,single_output)
-    elif attack == 'combi':
-        return Model_Class_combi(model,single_output)
-    elif attack == 'square':
-        return Model_Class_square(model,single_output)
+def wrapper_model(model, attack, single_output, cuda=False):
+    if cuda:
+        if attack =='boby':
+            return Model_Class_boby(model,single_output)
+        elif attack == 'combi':
+            return Model_Class_combi(model,single_output)
+        elif attack == 'square':
+            return Model_Class_square(model,single_output)
+    else:
+        if attack =='boby':
+            return Model_Class_boby_cpu(model,single_output)
+        elif attack == 'combi':
+            return Model_Class_combi_cpu(model,single_output)
+        elif attack == 'square':
+            return Model_Class_square_cpu(model,single_output)
 
 # Loss functions
 

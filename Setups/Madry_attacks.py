@@ -1,6 +1,11 @@
 """
-export PATH=/home/ughi/Documents/Cleaned\ Adversarial\ Attacks/Adversarial_Attacks/bin/:$PATH
-export PYTHONPATH=/home/ughi/Documents/Cleaned\ Adversarial\ Attacks/Adversarial_Attacks/lib/python3.6/site-packages/:$PYTHONPATH
+conda activate Adv_Attacks_cpu
+cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
+python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=1200 --save=True  --dataset=cifar10 --subspace_attack=True --subspace_dimension=1000 --Adversary_trained=False --eps=0.05
+
+conda activate Adv_Attacks_source_pytorch
+cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
+python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=300 --save=False --dataset=ImageNet --subspace_attack=True --subspace_dimension=1000 --Adversary_trained=True --eps=0.05
 """
 # coding: utf-8
 
@@ -157,10 +162,13 @@ if __name__ == '__main__':
             single_output=True
     
     if ch.cuda.is_available():
-        model.cuda()
+        model.eval()
+        model.to('cuda')
+        # model.eval()
+        model = wrapper_model(model.float(), FLAGS.attack, single_output, cuda=True)
     else:
         model.eval()
-    model = wrapper_model(model.float(), FLAGS.attack, single_output)
+        model = wrapper_model(model.float(), FLAGS.attack, single_output)
     # loading the data
     all_inputs, all_targets, all_labels = generate_data(data, dataset=FLAGS.dataset,
                                 samples=FLAGS.test_size, targeted=True,
@@ -278,7 +286,7 @@ if __name__ == '__main__':
                                     p_init=FLAGS.p_init, targeted=True, 
                                     loss_type='cross_entropy', 
                                     print_every=FLAGS.print_every,subspace_attack=FLAGS.subspace_attack,
-                                    subspace_dim=FLAGS.subspace_dimension, img=inputs)
+                                    subspace_dim=FLAGS.subspace_dimension)
                                     
 
         adv, eval_costs, summary, Success = result

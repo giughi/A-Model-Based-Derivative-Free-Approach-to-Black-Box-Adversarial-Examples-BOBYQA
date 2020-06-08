@@ -341,7 +341,7 @@ class ImageNet:
     random.shuffle(file_list)
     read_img_fn = lambda x: readimg(x, path, dimension)
 
-    r = [read_img_fn(x) for x in file_list[800:1300]]
+    r = [read_img_fn(x) for x in file_list[800:2100]]
     # print(file_list[:200])
     r = [x for x in r if x != None]
     test_data, test_labels, test_paths = zip(*r)
