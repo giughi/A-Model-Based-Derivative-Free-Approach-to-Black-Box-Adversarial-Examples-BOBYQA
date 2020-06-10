@@ -346,7 +346,7 @@ class ImageNet:
     r = [x for x in r if x != None]
     test_data, test_labels, test_paths = zip(*r)
     self.test_data = np.array(test_data)
-    self.test_labels = np.zeros((len(test_labels), 1001))
+    self.test_labels = np.zeros((len(test_labels), 1000))
     self.test_labels[np.arange(len(test_labels)), test_labels] = 1
     self.test_paths = test_paths
 

@@ -1,11 +1,15 @@
 """
 conda activate Adv_Attacks_cpu
 cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
-python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=1200 --save=True  --dataset=cifar10 --subspace_attack=True --subspace_dimension=1000 --Adversary_trained=False --eps=0.05
+python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=1200 --save=True  --dataset=cifar10 --subspace_attack=True --subspace_dimension=200 --Adversary_trained=False --eps=0.05
 
 conda activate Adv_Attacks_source_pytorch
 cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
-python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=300 --save=False --dataset=ImageNet --subspace_attack=True --subspace_dimension=1000 --Adversary_trained=True --eps=0.05
+python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=300 --save=True --dataset=ImageNet --subspace_attack=False  --Adversary_trained=False --eps=0.05
+
+conda activate Adv_Attacks_Previous_version
+cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
+python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=300 --save=True --dataset=ImageNet --subspace_attack=False  --Adversary_trained=False --eps=0.05
 """
 # coding: utf-8
 
@@ -32,6 +36,7 @@ from Attack_Code.MNIST_CIFAR_boby_gen import BlackBox
 from Attack_Code.BOBYQA.BOBYQA_Attack_Adversary_channels_2 import BlackBox_BOBYQA
 from Attack_Code.Combinatorial.attacks.parsimonious_attack_madry import ParsimoniousAttack
 from Attack_Code.Square_Attack.attack_madry import square_attack_linf
+from Attack_Code.GenAttack.genattack_tf2_PyTorch import GenAttack2
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
@@ -77,7 +82,20 @@ flags.DEFINE_integer('num_channels', default=3, help='Channels of the image that
 # SQUARE parameters
 flags.DEFINE_float('p_init', 0.1 , 'dimension of the blocks')
 
+# Gene parameters
+flags.DEFINE_float('mutation_rate', 0.005, 'Mutation rate')
+flags.DEFINE_float('alpha', 0.20, 'Step size')
+flags.DEFINE_integer('pop_size', 6, 'Population size')
+flags.DEFINE_integer('resize_dim', 96, 'Reduced dimension for dimensionality reduction')
+flags.DEFINE_bool('adaptive', True, 'Turns on the dynamic scaling of mutation prameters')
+
 FLAGS = flags.FLAGS
+
+def get_freer_gpu():
+    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
+    memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+    return np.argmax(memory_available)
+
 
 def generate_data(data, samples, dataset, targeted=True, start=0):
     """
@@ -119,6 +137,11 @@ def generate_data(data, samples, dataset, targeted=True, start=0):
 
 if __name__ == '__main__':
     # Set Parameters of the attacks
+
+    if ch.cuda.is_available():
+        free_GPU_idx=get_freer_gpu()
+        ch.cuda.set_device(free_GPU_idx)
+
     if FLAGS.max_evals is None:
         if (FLAGS.dataset == 'mnist' or 
                 FLAGS.dataset == 'cifar10'):
@@ -164,10 +187,10 @@ if __name__ == '__main__':
     if ch.cuda.is_available():
         model.eval()
         model.to('cuda')
-        # model.eval()
         model = wrapper_model(model.float(), FLAGS.attack, single_output, cuda=True)
     else:
         model.eval()
+        ch.set_num_threads(8)
         model = wrapper_model(model.float(), FLAGS.attack, single_output)
     # loading the data
     all_inputs, all_targets, all_labels = generate_data(data, dataset=FLAGS.dataset,
@@ -214,6 +237,18 @@ if __name__ == '__main__':
                             '_eps_'+str(FLAGS.eps) +
                             '_max_eval_'+ str(FLAGS.max_evals) + 
                             '_p_init_' + str(FLAGS.p_init) +
+                            '_subspace_attack_' + str(FLAGS.subspace_attack) +
+                            '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
+                            FLAGS.description + '.txt')  
+    elif FLAGS.attack == 'gene':
+        saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
+                            '_eps_'+str(FLAGS.eps) +
+                            '_max_eval_'+ str(FLAGS.max_evals) + 
+                            '_pop_size_'+ str(FLAGS.pop_size) +
+                            '_mutation_rate_'+ str(FLAGS.mutation_rate) +
+                            '_alpha_'+ str(FLAGS.alpha) +
+                            '_resize_dim_'+ str(FLAGS.resize_dim) +
+                            '_adaptive_'+ str(FLAGS.adaptive) +
                             '_subspace_attack_' + str(FLAGS.subspace_attack) +
                             '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
                             FLAGS.description + '.txt')  
@@ -287,6 +322,12 @@ if __name__ == '__main__':
                                     loss_type='cross_entropy', 
                                     print_every=FLAGS.print_every,subspace_attack=FLAGS.subspace_attack,
                                     subspace_dim=FLAGS.subspace_dimension)
+        elif FLAGS.attack=='gene':
+            attack = GenAttack2(model=model, pop_size=FLAGS.pop_size, mutation_rate=FLAGS.mutation_rate,
+                                eps=FLAGS.eps, max_evals=FLAGS.max_evals , alpha=FLAGS.alpha,
+                                resize_dim=FLAGS.resize_dim, adaptive=FLAGS.adaptive, 
+                                num_classes=len(targets[0]), input_dim=inputs.shape[1])
+            result = attack.attack(inputs, np.argmax(targets[0]))
                                     
 
         adv, eval_costs, summary, Success = result

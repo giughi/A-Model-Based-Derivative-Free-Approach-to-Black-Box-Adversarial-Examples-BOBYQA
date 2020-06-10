@@ -57,7 +57,6 @@ class Model_Class_square():
             margin = diff.min(0, keepdims=True)
             loss_ = margin * -1 if targeted else margin
         elif loss_type == 'cross_entropy':
-            print(len(logits), len(y))
             probs = softmax_square(logits)
             loss_ = -np.log((probs*y).sum()+1e-10) + np.log(np.sum(probs)- (probs*y).sum() + 1e-10)
             loss_ = loss_ * -1 if not targeted else loss_
@@ -115,6 +114,17 @@ class Model_Class_square_cpu():
             raise ValueError('Wrong loss.')
         return loss_.flatten()
 
+class Model_Class_gene_cpu():
+    def __init__(self, model,single_output):
+        self.model = model
+        self.single_output = single_output
+
+    def predict(self, img):
+        img = np.moveaxis(img,3,1)
+        img = ch.tensor(img).float()
+        logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
+        return logit.detach().numpy()
+
 def softmax_square(x):
     e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
     return e_x / e_x.sum(axis=0, keepdims=True)
@@ -134,6 +144,8 @@ def wrapper_model(model, attack, single_output, cuda=False):
             return Model_Class_combi_cpu(model,single_output)
         elif attack == 'square':
             return Model_Class_square_cpu(model,single_output)
+        elif attack == 'gene':
+            return Model_Class_gene_cpu(model,single_output)
 
 # Loss functions
 

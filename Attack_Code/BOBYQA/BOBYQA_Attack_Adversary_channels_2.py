@@ -154,10 +154,11 @@ def matr_subregions_division(img_size, num_channels, n, channel_size):
     """
     A = np.zeros((1,img_size,img_size,num_channels))
     partition = []
-    nn_up = np.ceil(img_size/n)
+    nn_up = np.floor(img_size/n)
     for i in range(n):
         partition.append(int(i*nn_up))
     partition.append(img_size)
+    # print(partition)
     # check that the number of intervals is n
     if len(partition)!=n+1:
         print('[WARNING] The partition is not exact.')

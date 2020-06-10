@@ -19,16 +19,16 @@ from mpl_toolkits.axes_grid.inset_locator import inset_axes
 
 import argparse
 
-# def str_to_bool(value):
-#     if isinstance(value, bool):
-#         return value
-#     if value.lower() in {'false', 'f', '0', 'no', 'n'}:
-#         return False
-#     elif value.lower() in {'true', 't', '1', 'yes', 'y'}:
-#         return True
-#     raise ValueError(f'{value} is not a valid boolean value')
+def str_to_bool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() in {'false', 'f', '0', 'no', 'n'}:
+        return False
+    elif value.lower() in {'true', 't', '1', 'yes', 'y'}:
+        return True
+    raise ValueError(f'{value} is not a valid boolean value')
 
-# parser.add_argument('--foo', type=str_to_bool, nargs='?', const=True, default=False)
+
 
 parser = argparse.ArgumentParser()
 # parser.add_argument("eps", default=0.1, help="Energy of the pertubation", type=float)
@@ -37,9 +37,11 @@ parser.add_argument("--Data", default='Imagenet', help="Dataset that we want to 
 parser.add_argument("--title", default='', help="This will be associated to the image title")
 parser.add_argument("--plot_type", default='CDF', help="What graph we generate; `CDF` or `quantile`")
 parser.add_argument("--save",default=True, help="Boolean to save the result", type=bool)
-parser.add_argument("--Adversary", default=False, action='store_true', help="Boolean for plotting adversarial attacks too")
+parser.add_argument('--Adversary', type=str_to_bool, nargs='?', const=True, default=False)
+# parser.add_argument("--Adversary", default=False, action='store_true', help="Boolean for plotting adversarial attacks too")
 parser.add_argument("--quantile", default=0.5, help="If in `quantile` option, it says which quantile to plot", type=float)
 parser.add_argument("--max_iter", default=15000, help="Maximum iterations allowed", type=int)
+parser.add_argument("--sub_dim", default=1000, help="Subdomain Dimension", type=int)
 parser.add_argument("--second_iter",default=False, help="Loading results from second round of attacks", type=bool)
 parser.add_argument("--only_second",default=False, help="Loading results from second round of attacks", type=bool)
 parser.add_argument("--adv_inception",default=False, help="Using adversary results", type=bool)
@@ -89,7 +91,7 @@ for i in range(len(L_inf_var)):
     BATCH = L_inf_var[i]
     print('ADversary==',args.Adversary)
     if args.Data=='CIFAR':
-        with open(main_dir+'/Results/CIFAR/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'+str(BATCH)+'_max_eval_3000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_True_subspace_dimension_1000.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/CIFAR/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'+str(BATCH)+'_max_eval_3000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             dist = pickle.load(fp)
             
         # with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry_maxfun_1_4_rescaled_01.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
@@ -98,14 +100,14 @@ for i in range(len(L_inf_var)):
         # with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
         #     gene = pickle.load(fp)Results/CIFAR/combi_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False.txt
         
-        with open(main_dir+'/Results/CIFAR/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_1000.txt',"rb") as fp:
+        with open(main_dir+'/Results/CIFAR/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
             combi = pickle.load(fp)
             
-        with open(main_dir+'/Results/CIFAR/square_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_3000_p_init_0.1_subspace_attack_True_subspace_dimension_1000.txt',"rb") as fp:
+        with open(main_dir+'/Results/CIFAR/square_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_3000_p_init_0.1_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
             block = pickle.load(fp)
     
     elif args.Data=='Imagenet':
-        with open(main_dir+'/Results/Imagenet/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'+str(BATCH)+'_max_eval_15000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_True_subspace_dimension_1000.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/Imagenet/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'+str(BATCH)+'_max_eval_15000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             dist = pickle.load(fp)
             
         # with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry_maxfun_1_4_rescaled_01.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
@@ -113,9 +115,9 @@ for i in range(len(L_inf_var)):
 
         # with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
         #     gene = pickle.load(fp)Results/CIFAR/combi_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False.txt
-        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_1000.txt',"rb") as fp:
+        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
             combi = pickle.load(fp)
-        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_1000.txt',"rb") as fp:
+        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
             block = pickle.load(fp)
 
 
@@ -261,7 +263,7 @@ def generating_cumulative_blocks(list_arrays,name_arrays, m, max_eval, refinemen
 
     return M
 
-saving_title=main_dir+'/Results/'+str(args.Data)+'/Plots/CDF_adversary'+str(args.Adversary) + title
+saving_title=main_dir+'/Results/'+str(args.Data)+'/Plots/CDF_adversary'+str(args.Adversary) + title + '_' + str(args.sub_dim)
 
 generating_cumulative_blocks([list_dist,list_combi,list_block],
                              ['BOBY','combi','Square'],
