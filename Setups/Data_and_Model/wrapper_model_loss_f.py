@@ -33,7 +33,6 @@ class Model_Class_boby():
         img = np.moveaxis(img,3,1)
         img = ch.from_numpy(img).to(device='cuda',dtype=ch.float)
         logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
-        # print('=========>',logit)
         return logit.cpu().detach().numpy()
 
 class Model_Class_square():
@@ -125,6 +124,17 @@ class Model_Class_gene_cpu():
         logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
         return logit.detach().numpy()
 
+class Model_Class_FW_cpu():
+    def __init__(self, model,single_output):
+        self.model = model
+        self.single_output = single_output
+
+    def predict(self, img):
+        img = np.moveaxis(img,3,1)
+        img = ch.tensor(img).float()
+        logit,_ = patch_single_output(self.model(img+0.5), self.single_output)
+        return logit.detach().numpy()
+
 def softmax_square(x):
     e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
     return e_x / e_x.sum(axis=0, keepdims=True)
@@ -137,6 +147,10 @@ def wrapper_model(model, attack, single_output, cuda=False):
             return Model_Class_combi(model,single_output)
         elif attack == 'square':
             return Model_Class_square(model,single_output)
+        elif attack == 'gene':
+            return Model_Class_boby(model,single_output)
+        elif attack == 'FW':
+            return Model_Class_boby(model,single_output)
     else:
         if attack =='boby':
             return Model_Class_boby_cpu(model,single_output)
@@ -146,6 +160,9 @@ def wrapper_model(model, attack, single_output, cuda=False):
             return Model_Class_square_cpu(model,single_output)
         elif attack == 'gene':
             return Model_Class_gene_cpu(model,single_output)
+        elif attack == 'FW':
+            return Model_Class_FW_cpu(model,single_output)
+            
 
 # Loss functions
 
@@ -192,6 +209,20 @@ def loss_func_boby(targets, model, img, pert, only_loss=False):
     else:
         return lll, logits_, distances
 
+def loss_func_FW(img, targets, model):
+    logits_ = model.predict(img)
+    lll = []
+    preds_l = []
+    successes = []
+    for i in range(logits_.shape[0]):
+        probs_ = softmax(logits_[i])
+        indices = np.argmax(targets[0])
+        lll.append(-np.log(probs_[indices] + 1e-10) + np.log(np.sum(probs_) 
+                                                                - probs_[indices] + 1e-10))
+        preds_l.append(np.argmax(logits_[i]))
+        successes.append(np.argmax(logits_[i])==indices)
+    return lll, preds_l, successes[0]
+
 def softmax(x):
     e_x = np.exp(x - np.max(x))
     return e_x / e_x.sum(axis=0)
@@ -205,6 +236,10 @@ class wrapper_loss():
             self.loss = lambda x: loss_func_combi(x,targets,model)
         elif attack == 'square':
             self.loss = None
+        elif attack == 'gene':
+            self.loss = None
+        elif attack == 'FW':
+            self.loss = lambda x: loss_func_FW(x,targets,model)
 
     def __call__(self, *args, **kw):
         return self.loss(*args, **kw)

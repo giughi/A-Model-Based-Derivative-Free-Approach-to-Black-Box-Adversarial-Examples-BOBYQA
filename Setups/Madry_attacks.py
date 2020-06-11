@@ -37,6 +37,7 @@ from Attack_Code.BOBYQA.BOBYQA_Attack_Adversary_channels_2 import BlackBox_BOBYQ
 from Attack_Code.Combinatorial.attacks.parsimonious_attack_madry import ParsimoniousAttack
 from Attack_Code.Square_Attack.attack_madry import square_attack_linf
 from Attack_Code.GenAttack.genattack_tf2_PyTorch import GenAttack2
+from Attack_Code.Frank_Wolfe.FW_black import FW_black
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
@@ -327,6 +328,10 @@ if __name__ == '__main__':
                                 eps=FLAGS.eps, max_evals=FLAGS.max_evals , alpha=FLAGS.alpha,
                                 resize_dim=FLAGS.resize_dim, adaptive=FLAGS.adaptive, 
                                 num_classes=len(targets[0]), input_dim=inputs.shape[1])
+            result = attack.attack(inputs, np.argmax(targets[0]))
+        elif FLAGS.attack=='FW':
+            attack = FW_black(loss_f=loss_func, att_iter=10000, grad_est_batch_size=25, eps=0.05,
+                 lr=0.01, delta=0.01, sensing_type='gaussian', q_limit=FLAGS.max_evals, beta1=0.99)
             result = attack.attack(inputs, np.argmax(targets[0]))
                                     
 
