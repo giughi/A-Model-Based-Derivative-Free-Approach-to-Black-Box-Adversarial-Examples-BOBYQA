@@ -38,6 +38,8 @@ parser.add_argument("--title", default='', help="This will be associated to the 
 parser.add_argument("--plot_type", default='CDF', help="What graph we generate; `CDF` or `quantile`")
 parser.add_argument("--save",default=True, help="Boolean to save the result", type=bool)
 parser.add_argument('--Adversary', type=str_to_bool, nargs='?', const=True, default=False)
+parser.add_argument('--subspace_attack', type=str_to_bool, nargs='?', const=True, default=False)
+
 # parser.add_argument("--Adversary", default=False, action='store_true', help="Boolean for plotting adversarial attacks too")
 parser.add_argument("--quantile", default=0.5, help="If in `quantile` option, it says which quantile to plot", type=float)
 parser.add_argument("--max_iter", default=15000, help="Maximum iterations allowed", type=int)
@@ -61,6 +63,8 @@ maxiter = args.max_iter
 title = args.title
 second_iter = args.second_iter
 
+if not args.subspace_attack:
+    args.sub_dim=None
 # distance    = []
 
 median_rand = []
@@ -85,94 +89,156 @@ for i in range(len(L_inf_var)):
     gene_tot = []
     combi_tot = []
     block_tot = []
+    FW_tot = []
     dist_tot_adv = []
     gene_tot_adv = []
     combi_tot_adv = []
     BATCH = L_inf_var[i]
     print('ADversary==',args.Adversary)
     if args.Data=='CIFAR':
-        with open(main_dir+'/Results/CIFAR/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'+str(BATCH)+'_max_eval_3000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-            dist = pickle.load(fp)
-            
-        # with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry_maxfun_1_4_rescaled_01.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-        #     dist = pickle.load(fp)
+        # finding intervals of the data
+        if not args.Adversary:
+            if BATCH==0.02:
+                interval = [int(i) for i in range(1146)]
+            elif BATCH==0.05:
+                interval = np.arange(1146,2292)
+            elif BATCH==0.1:
+                interval = np.arange(2292, 3438)
+            elif BATCH==0.15:
+                interval = np.arange(3438,4580)
+        else:
+            if BATCH==0.02:
+                interval = [int(i) for i in range(1092)]
+            elif BATCH==0.05:
+                interval = np.arange(1092,2101)
+            elif BATCH==0.1:
+                interval = np.arange(2184, 3276)
+            elif BATCH==0.15:
+                interval = np.arange(3276, 4368)
 
-        # with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-        #     gene = pickle.load(fp)Results/CIFAR/combi_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False.txt
+        with open(main_dir+'/Results/CIFAR/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'
+                 +str(BATCH)+'_max_eval_3000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_'
+                 +str(args.subspace_attack)+'_subspace_dimension_'+str(args.sub_dim)+'.txt', "rb") as fp:
+            dist_copy = pickle.load(fp)
+            dist = []
+            if not args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    dist.append(dist_copy[i])
+            elif args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    dist.append(dist_copy[i])
+            else:
+                dist=dist_copy
         
-        with open(main_dir+'/Results/CIFAR/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
-            combi = pickle.load(fp)
+        with open(main_dir+'/Results/CIFAR/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+
+            '_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_'
+            +str(args.subspace_attack)+ '_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
+            combi_copy = pickle.load(fp)
+            combi = []
+            if not args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    combi.append(combi_copy[i])
+            elif args.Adversary and BATCH >= 0.02 and BATCH <=0.05:
+                for i in interval:
+                    combi.append(combi_copy[i])
+            else:
+                combi = combi_copy
             
-        with open(main_dir+'/Results/CIFAR/square_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_3000_p_init_0.1_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
-            block = pickle.load(fp)
-    
+        with open(main_dir+'/Results/CIFAR/square_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+
+            '_max_eval_3000_p_init_0.1_subspace_attack_'+str(args.subspace_attack)+'_subspace_dimension_'
+            +str(args.sub_dim)+'.txt',"rb") as fp:
+            block_copy = pickle.load(fp)
+            block = []
+            if not args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    block.append(block_copy[i])
+            elif args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    block.append(block_copy[i])
+            else:
+                block = block_copy
+
+        with open(main_dir+'/Results/CIFAR/gene_adversary_' + str(args.Adversary) + '_eps_'+str(BATCH) +
+                                '_max_eval_3000_pop_size_6_mutation_rate_0.005_alpha_0.2' +
+                                '_resize_dim_96_adaptive_True' +
+                                '_subspace_attack_' + str(args.subspace_attack) +
+                                '_subspace_dimension_' + str(args.sub_dim) +
+                                '.txt',"rb") as fp:
+            gene_copy = pickle.load(fp)
+            gene = []
+            # if not args.Adversary:
+            #     for i in interval:
+            #         gene.append(block_copy[i])
+            # else:
+            gene = gene_copy
+
+        with open(main_dir+'/Results/CIFAR/FW_adversary_' + str(args.Adversary) +
+                                '_eps_'+str(BATCH) +
+                                '_max_eval_3000_att_iter_10000_grad_est_batch_size_' +
+                                '25_l_r_0.01_delta_0.01_beat1_0.99_sensing_type_gaussian'+
+                                '_subspace_attack_' + str(args.subspace_attack) +
+                                '_subspace_dimension_' + str(args.sub_dim) + 
+                                '.txt',"rb") as fp:
+            FW_copy = pickle.load(fp)
+            FW = []
+            if not args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    FW.append(FW_copy[i])
+            elif args.Adversary and BATCH >= 0.02:
+                for i in interval:
+                    FW.append(FW_copy[i])
+            else:
+                FW = FW_copy
+
     elif args.Data=='Imagenet':
-        with open(main_dir+'/Results/Imagenet/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'+str(BATCH)+'_max_eval_15000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
+        with open(main_dir+'/Results/Imagenet/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'
+                  +str(BATCH)+'_max_eval_15000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_'
+                  +str(args.subspace_attack)+'_subspace_dimension_'+str(args.sub_dim)+'.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
             dist = pickle.load(fp)
-            
-        # with open(main_dir+'/Results/CIFAR/boby_L_inf_'+str(BATCH)+'_max_eval_3000_madry_maxfun_1_4_rescaled_01.txt', "rb") as fp:#('dist_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-        #     dist = pickle.load(fp)
-
-        # with open(main_dir+'/Results/CIFAR/gene_L_inf_'+str(BATCH)+'_max_eval_300_distilled.txt', "rb") as fp:#('gene_L_inf_'+str(BATCH)+'.txt', "rb") as fp:   # Unpickling
-        #     gene = pickle.load(fp)Results/CIFAR/combi_adversary_True_eps_'+str(BATCH)+'_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False.txt
-        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
+        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+
+                 '_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_'
+                 +str(args.subspace_attack)+'_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
             combi = pickle.load(fp)
-        with open(main_dir+'/Results/Imagenet/combi_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+'_max_eval_15000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_True_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
+        # args.sub_dim=1000
+        with open(main_dir+'/Results/Imagenet/square_adversary_'+str(args.Adversary)+'_eps_'+str(BATCH)+
+                  '_max_eval_15000_p_init_0.1_subspace_attack_'
+                 +str(args.subspace_attack)+'_subspace_dimension_'+str(args.sub_dim)+'.txt',"rb") as fp:
             block = pickle.load(fp)
+        FW = block
+        gene = block
 
-
-
-    # list_rand_2 = []
-    # list_orde_2 = []
     list_dist_2 = []
-    # list_mixe_2 = []
-    # list_gene_2 = []
     list_combi_2 = []
     list_block_2 = []
+    list_gene_2 = []
+    list_FW_2 = []
 
-    # list_dist_2_adv = []
-    # # list_gene_2_adv = []
-    # list_combi_2_adv = []
-    # list_block_2_adv = []
-    
-    total_number = np.minimum(np.minimum(len(dist), len(block)), len(combi))
+    total_number = np.minimum(np.minimum(len(dist), len(block)), 
+                              np.minimum(np.minimum(len(gene), len(FW)), 
+                                         len(combi)))
 
-
-    
-    for j in range(np.minimum(np.minimum(len(dist), len(block)), 
-                              np.minimum(len(combi),len(block))
-                             )):
+    print('TOTAL NUMBER', total_number)
+    for j in range(total_number):
         dist_tot.append(dist[j][0])
         block_tot.append(block[j][0])
         combi_tot.append(combi[j][0])
+        gene_tot.append(gene[j][0])
+        FW_tot.append(FW[j][0])
         if dist[j][0]< maxiter:
             list_dist_2.append(dist[j][0])
-        # if gene[j][0]< maxiter and gene[j][0] != 3000:
-        #     list_gene_2.append(gene[j][0])
+        if gene[j][0]< maxiter and gene[j][0] != 3000:
+            list_gene_2.append(gene[j][0])
         if combi[j][0] < maxiter:
             list_combi_2.append(combi[j][0])
         if block[j][0] < maxiter:
             list_block_2.append(block[j][0])
-
-    # if dataset=='MNIST' or dataset=='CIFAR':
-    #     total_number_adv = np.minimum(np.minimum(len(dist_adv), len(gene_adv)),
-    #                                   np.minimum(len(combi_adv), len(block_adv)))
-
-    #     for j in range(total_number_adv):
-    #         dist_tot_adv.append(dist_adv[j][0])
-    #         gene_tot_adv.append(gene_adv[j][0])
-    #         combi_tot_adv.append(combi_adv[j][0])
-    #         if dist_adv[j][0]< maxiter:
-    #             list_dist_2_adv.append(dist_adv[j][0])
-    #         if gene_adv[j][0]< maxiter and gene_adv[j][0] != 3000:
-    #             list_gene_2_adv.append(gene_adv[j][0])
-    #         if combi_adv[j][0] < maxiter:
-    #             list_combi_2_adv.append(combi_adv[j][0])
-    #         if block_adv[j][0] < maxiter:
-    #             list_block_2_adv.append(block_adv[j][0])
+        if FW[j][0] < maxiter:
+            list_FW_2.append(FW[j][0])
 
 
-print('Lengths: BOBYQA:{}, COMBI:{}, SQUARE:{}'.format(len(dist), len(combi), len(block)))
+
+print('Lengths: BOBYQA:{}, COMBI:{}, SQUARE:{}, GENE:{}, FW:{}.'
+        .format(len(dist), len(combi), len(block), len(gene), len(FW)))
 
 # Final plotting function
 
@@ -180,22 +246,23 @@ list_gene = []
 list_block = []
 list_dist = []
 list_combi = []
+list_FW = []
 
-
-total_number = np.minimum(
-                      np.minimum(
-                             len(block),len(dist)
-                             ),
-                      np.minimum(
-                             len(combi), len(combi)
-                             )
-                      )
+# total_number = np.minimum(
+#                       np.minimum(
+#                              len(block),len(dist)
+#                              ),
+#                       np.minimum(
+#                              len(combi), len(combi)
+#                              )
+#                       )
 
 for j in range(total_number):
     list_block.append(block[j][0])
-    # list_gene.append(gene[j][0])
+    list_gene.append(gene[j][0])
     list_dist.append(dist[j][0])
     list_combi.append(combi[j][0])
+    list_FW.append(FW[j][0])
 
 # if len(block)<total_number:
 
@@ -265,9 +332,14 @@ def generating_cumulative_blocks(list_arrays,name_arrays, m, max_eval, refinemen
 
 saving_title=main_dir+'/Results/'+str(args.Data)+'/Plots/CDF_adversary'+str(args.Adversary) + title + '_' + str(args.sub_dim)
 
-generating_cumulative_blocks([list_dist,list_combi,list_block],
-                             ['BOBY','combi','Square'],
+if args.Data == 'CIFAR':
+    generating_cumulative_blocks([list_dist,list_combi,list_block, list_gene, list_FW],
+                             ['BOBY','combi','Square','Gene', 'FW'],
                              total_number,3000,1000,L_inf_var[0],saving_title, True, False);
+else:
+    generating_cumulative_blocks([list_dist,list_combi,list_block],
+                             ['BOBY','combi','Square'],
+                             total_number,15000,1000,L_inf_var[0],saving_title, True, False);
 
 
 # LEGEND = (BATCH in [0.4,0.1]) or (BATCH == 0.05 and dataset == 'Imagenet') or (BATCH == 0.03 and dataset == 'MiniImageNet')

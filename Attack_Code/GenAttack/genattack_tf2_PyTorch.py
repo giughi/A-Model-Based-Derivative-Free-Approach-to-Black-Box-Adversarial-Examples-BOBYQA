@@ -168,11 +168,13 @@ class GenAttack2(object):
             adv_img = np.clip(np.expand_dims(input_img, axis=0)+np.expand_dims(adv_noise, axis=0),
                 self.box_min[0:1], self.box_max[0:1])
 
-            # Number of queries = NUM_STEPS * (POP_SIZE -1 ) + 1
-            # We subtract 1 from pop_size, because we use elite mechanism, so one population 
-            # member is copied from previous generation and no need to re-evaluate it.
-            # The first population is an exception, therefore we add 1 to have total sum.
-            query_count = num_steps * (self.pop_size  - 1)+ 1
+        # Number of queries = NUM_STEPS * (POP_SIZE -1 ) + 1
+        # We subtract 1 from pop_size, because we use elite mechanism, so one population 
+        # member is copied from previous generation and no need to re-evaluate it.
+        # The first population is an exception, therefore we add 1 to have total sum.
+        query_count = num_steps * (self.pop_size  - 1)+ 1
+        
+        # query_count = num_steps * (self.pop_size  - 1)+ 1
         if success:
             return  adv_img[0], query_count, _, success
         else:

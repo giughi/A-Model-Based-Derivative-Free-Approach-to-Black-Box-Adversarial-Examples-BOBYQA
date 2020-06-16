@@ -186,7 +186,7 @@ if __name__ == '__main__':
                         print('Real = {}, Predicted = {}, Target = {}'.format(
                             real_label, orig_pred, target_class))
 
-                    if orig_pred != real_label:
+                    if orig_pred != real_label+1:
                         if FLAGS.verbose:
                             print('\t Skipping incorrectly classified image.')
                         right_classification = False

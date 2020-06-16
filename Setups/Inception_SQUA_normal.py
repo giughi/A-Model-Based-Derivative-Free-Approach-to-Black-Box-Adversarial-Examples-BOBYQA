@@ -236,7 +236,7 @@ if __name__ == '__main__':
                     y_target_onehot = utils.dense_to_onehot(np.array([np.argmax(target_label)]), n_cls=len(target_label))
                 else:
                     y_target_onehot = utils.dense_to_onehot(np.array([real_label]), n_cls=len(target_label))
-                result = square_attack_linf(sess, model, img0, y_target_onehot, FLAGS.eps, FLAGS.max_steps, 0.05,FLAGS.targeted)
+                result = square_attack_linf(sess, model, img0, y_target_onehot, FLAGS.eps, FLAGS.max_steps, 0.01,FLAGS.targeted)
                 
                 end_time = time.time()
 
