@@ -196,7 +196,7 @@ if __name__ == '__main__':
         if FLAGS.eps is None:
             epsilons = [0.01, 0.005]
         else:
-            epsilons = FLAGS.eps
+            epsilons = [FLAGS.eps]
 
     elif FLAGS.dataset == "ImageNet":
         ds = Imagenet_robustness('./Data/ImageNet/images')
@@ -210,7 +210,10 @@ if __name__ == '__main__':
             single_output=True
         
         if FLAGS.eps is None:
-            epsilons = [0.02, 0.05, 0.01, 0.1]
+            if not FLAGS.Adversary_trained:
+                epsilons = [0.02, 0.05, 0.01, 0.1]
+            else:
+                epsilons = [0.02, 0.05, 0.1]
         else:
             epsilons = [FLAGS.eps]
     

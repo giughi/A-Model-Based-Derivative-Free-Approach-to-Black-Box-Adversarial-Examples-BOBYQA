@@ -6,3 +6,9 @@ pandas
 opencv
 numpy
 numba
+
+
+conda install tensorflow=1.14 keras scipy=1.1
+pip install robustness
+pip install opencv-python
+pip install Py-BOBYQA
