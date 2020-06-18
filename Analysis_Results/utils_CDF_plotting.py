@@ -97,11 +97,12 @@ def generating_cumulative_blocks(list_arrays, list_arrays_both, name_arrays,
     if zoom:
         a = plt.axes([.45, .45, .4, .4],)
         dimni = 5
+        plt.grid()
         for i in range(n):
-            plt.plot(r,M[i,:],color=colors[i],lw=1.5)
+            plt.plot(r,M[i,:],color=colors[i],lw=2)
         plt.xlabel('Queries',fontsize=fontSize-dimni)
         plt.ylabel('CDF',fontsize=fontSize-dimni)
-        plt.axis([5000, max_eval, 0 ,0.19],fontsize=fontSize-dimni)
+        plt.axis([max_eval*0.75, max_eval, 0 ,0.21],fontsize=fontSize-dimni)
         plt.xticks(fontsize=fontSize-dimni)
         plt.yticks(fontsize=fontSize-dimni)
 

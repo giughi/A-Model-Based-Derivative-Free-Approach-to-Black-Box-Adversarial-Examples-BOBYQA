@@ -7,9 +7,9 @@ conda activate Adv_Attacks_source_pytorch
 cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
 python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=300 --save=True --dataset=ImageNet --subspace_attack=False  --Adversary_trained=False --eps=0.05
 
-conda activate Adv_Attacks_Previous_version
+conda activate Adv_Attacks_source_pytorch
 cd ./Documents/GITBOBY/A-Model-Based-Derivative-Free-Approach-to-Black-Box-Adversarial-Examples-BOBYQA/
-python Setups/Madry_attacks.py --attack=square --max_f=1.3 --rounding=True --test_size=300 --save=True --dataset=ImageNet --subspace_attack=False  --Adversary_trained=False --eps=0.05
+python Setups/Madry_attacks.py --test_size=400  --dataset=ImageNet --Adversary_trained=True --attack=square
 
 
 python Setups/Madry_attacks.py --attack=boby --Adversary_trained=False --test_size=1200 --dataset=cifar10
@@ -211,9 +211,9 @@ if __name__ == '__main__':
         
         if FLAGS.eps is None:
             if not FLAGS.Adversary_trained:
-                epsilons = [0.02, 0.05, 0.01, 0.1]
+                epsilons = [0.01, 0.1]
             else:
-                epsilons = [0.02, 0.05, 0.1]
+                epsilons = [0.02]
         else:
             epsilons = [FLAGS.eps]
     
@@ -324,15 +324,20 @@ if __name__ == '__main__':
                     already_done = len(list_attack)
         
             if already_done>0:
+                print(already_done,'attacks')
                 found = False
                 # set the label and target of the image that has been last attacked
                 lab = list_attack[-1][2]
                 tar = list_attack[-1][3] 
                 # iterate throught the data to find at what point we are
                 while not found:
-                    
-                    lab_ = np.argmax(all_labels[already_done-1:already_done])
-                    tar_ = np.argmax(all_targets[already_done-1:already_done])
+                    # print(all_labels[already_done-1:already_done],all_targets[already_done-1:already_done],
+                    #      ' instead of ', lab, tar)
+                    try:
+                        lab_ = np.argmax(all_labels[already_done-1:already_done])
+                        tar_ = np.argmax(all_targets[already_done-1:already_done])
+                    except:
+                        already_done = 0
 
                     already_done +=1
                     if lab == lab_ and tar==tar_:

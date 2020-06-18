@@ -219,7 +219,7 @@ class InceptionModelPrediction:
   
   def predict(self, dat):
     dat = np.squeeze(dat)
-    scaled = (0.5 + dat) * 255
+    # scaled = (0.5 + dat) * 255
     scaled = dat.reshape((1,) + dat.shape)
     # print(scaled.shape)
     predictions = self.sess.run(self.softmax_tensor,

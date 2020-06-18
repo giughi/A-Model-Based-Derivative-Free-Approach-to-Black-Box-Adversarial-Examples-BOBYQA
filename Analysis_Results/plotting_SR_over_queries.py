@@ -6,6 +6,7 @@ import time
 
 from utils_CDF_plotting import *
 from utils_uploading import *
+from utils_SR_plotting import *
 
 import pickle
 
@@ -40,7 +41,7 @@ parser.add_argument("--plot_type", default='CDF', help="What graph we generate; 
 parser.add_argument("--save",default=True, help="Boolean to save the result", type=bool)
 parser.add_argument('--Adversary', type=str_to_bool, nargs='?', const=True, default=False)
 parser.add_argument('--zoom', type=str_to_bool, nargs='?', const=True, default=False)
-parser.add_argument('--both', type=str_to_bool, nargs='?', const=True, default=False)
+parser.add_argument('--both', type=str_to_bool, nargs='?', const=True, default=True)
 parser.add_argument('--legend', type=str_to_bool, nargs='?', const=True, default=False)
 parser.add_argument('--subspace_attack', type=str_to_bool, nargs='?', const=True, default=False)
 parser.add_argument("--loc", default=1, help="Subdomain Dimension", type=int)
@@ -76,39 +77,45 @@ list_available_results = []
 list_available_results_adv = []
 list_available_attacks = []
 
+#Let's define the epsilons on which we compute the SR
+if args.Data=='CIFAR':
+    epsilons = [0.005, 0.01, 0.02, 0.05, 0.1, 0.15]
+    epsilons_adv = [0.02, 0.05, 0.1, 0.15]
+
+
+
 # Let's import the different results that we can achieve
-for attack in list_possible_attacks:
+args.Adversary = False
 
-    results = import_results(attack, args)
-
-    if results is not None:
-        list_available_results.append(results)
-        list_available_attacks.append(attack)
-
-if args.both:
+SR_list = []
+for eps in epsilons:
+    args.eps = eps
+    results_list = []
+    
     for attack in list_possible_attacks:
-        results_adv = import_results(attack, args, both=True)
-        list_available_results_adv.append(results_adv)
+        results_list.append(import_results(attack, args))
+    
+    SR_list.append(computation_SR(results_list, max_queries))
 
 
-name_possible_attacks = map_to_complete_names(list_available_attacks, args.both)
-
-# Let's define the saving name of the plot
-saving_title=(main_dir+'/Results/'+str(args.Data)+'/Plots/CDF_adversary_'+str(args.Adversary) 
-            + args.title + '_sub_dim_' + str(args.sub_dim) + '_eps_' + str(args.eps) + '_both_' 
-            + str(args.both) + '_legend_' + str(args.legend) +'_zoom_' +str(args.zoom) + '.pdf')
-
-# Let's print the results
-generating_cumulative_blocks(list_available_results, 
-                            list_available_results_adv, 
-                            name_possible_attacks,
-                            max_queries,
-                            1000,  #interpolation points
-                            args.eps,
-                            saving_title, 
-                            legend=args.legend, 
-                            zoom=args.zoom,
-                            both=args.both,
-                            loc=args.loc);
+args.Adversary = True
+SR_list_adv = []
+for eps in epsilons_adv:
+    args.eps = eps
+    results_list = []
+    
+    for attack in list_possible_attacks:
+        results_list.append(import_results(attack, args))
+    
+    SR_list_adv.append(computation_SR(results_list, max_queries))
 
 
+# Identify the name of the attacks
+name_possible_attacks = map_to_complete_names(list_possible_attacks, args.both)
+
+
+saving_title=(main_dir+'/Results/'+str(args.Data)+'/Plots/SR_both_' 
+            + str(args.both) + '_legend_' + str(args.legend) + '.pdf')
+# Plot the results
+generating_SR_plot(epsilons, SR_list, epsilons_adv, SR_list_adv, name_possible_attacks,args, 
+                  saving_title)
