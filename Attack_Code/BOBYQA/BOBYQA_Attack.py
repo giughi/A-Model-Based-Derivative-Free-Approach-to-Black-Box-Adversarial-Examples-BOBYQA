@@ -121,7 +121,6 @@ def image_region_importance(img):
     # - probablity_matrix: matrix with the ecorresponding probabilities.
     
     n, m, k = img.shape
-   
     probability_matrix = np.zeros((n, m, k))
 
     for i in range(k):
@@ -132,7 +131,10 @@ def image_region_importance(img):
     # We have to give a probability also to all the element that have zero variance
     # this implies that we will add to the whole matrix the minimum nonzero value, divided
     # by 100
-    probability_matrix += np.min(probability_matrix[np.nonzero(probability_matrix)])/100
+    if len(np.nonzero(probability_matrix)[0])!=0:
+        probability_matrix += np.min(probability_matrix[np.nonzero(probability_matrix)])/100
+    else:
+        probability_matrix += 1
     
     # Normalise the probability matrix
     probability_matrix = probability_matrix/np.sum(probability_matrix)
@@ -410,9 +412,10 @@ class BlackBox_BOBYQA:
         opt_fun = Objfun(lambda c: self.sess.run([self.loss], feed_dict={
             self.modifier: vec2modMatRand(c, indice, var, Random_Matrix, super_dependency, bb, aa, self.overshoot)})[0])
         initial_loss = opt_fun(x_o)
-        user_params = {'init.random_initial_directions':False}
+        user_params = {'init.random_initial_directions':False,
+                       'init.random_directions_make_orthogonal':False}
         soln = pybobyqa.solve(opt_fun, x_o, rhobeg=np.min(b-a)/3,
-                              bounds=(a, b), maxfun=nn*1.2,
+                              bounds=(a, b), maxfun=nn*1.3,
                               rhoend=np.min(b-a)/6,
                               npt=nn+1, scaling_within_bounds=False,
                               user_params=user_params)
@@ -465,6 +468,7 @@ class BlackBox_BOBYQA:
 
         # convert img to float32 to avoid numba error
         img = img.astype(np.float32)
+
         img0 = self.image0
 
         if self.use_resize:
@@ -577,7 +581,6 @@ class BlackBox_BOBYQA:
                 super_dependency, permutation = matr_subregions_division(np.zeros(np.array([img]).shape),
                                                             self.small_x, permutation, KK, force_renew)
                 Random_Matrix = np.ones(np.array([img]).shape)
-
 
                 prob = image_region_importance(tf.image.resize_images(img, [self.small_x, self.small_y],
                                                                         align_corners=True,

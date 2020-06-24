@@ -47,6 +47,7 @@ parser.add_argument('--subspace_attack', type=str_to_bool, nargs='?', const=True
 parser.add_argument("--loc", default=1, help="Subdomain Dimension", type=int)
 
 # parser.add_argument("--Adversary", default=False, action='store_true', help="Boolean for plotting adversarial attacks too")
+parser.add_argument("--p_init", default=0.01, help="If in `quantile` option, it says which quantile to plot", type=float)
 parser.add_argument("--quantile", default=0.5, help="If in `quantile` option, it says which quantile to plot", type=float)
 parser.add_argument("--max_iter", default=15000, help="Maximum iterations allowed", type=int)
 parser.add_argument("--sub_dim", default=1000, help="Subdomain Dimension", type=int)
@@ -81,6 +82,9 @@ list_available_attacks = []
 if args.Data=='CIFAR':
     epsilons = [0.005, 0.01, 0.02, 0.05, 0.1, 0.15]
     epsilons_adv = [0.02, 0.05, 0.1, 0.15]
+elif args.Data=='Imagenet':
+    epsilons = [0.01, 0.02, 0.05, 0.1]
+    epsilons_adv = [0.02, 0.05, 0.1]
 
 
 

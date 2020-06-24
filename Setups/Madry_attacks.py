@@ -96,9 +96,9 @@ flags.DEFINE_bool('adaptive', default=True, help='Turns on the dynamic scaling o
 #FW parameters
 flags.DEFINE_integer('att_iter', default=10000, help='Attack_Iterations')
 flags.DEFINE_integer('grad_est_batch_size', default=25, help='Dimension of batch for gradient estimation')
-flags.DEFINE_float('l_r', default=0.01, help='Learning Rate')
+flags.DEFINE_float('l_r', default=None, help='Learning Rate')
 flags.DEFINE_float('delta', default=0.01, help='radius on which gradient is learnt')
-flags.DEFINE_float('beta1', default=0.99, help='Momentum Parameters')
+flags.DEFINE_float('beta1', default=None, help='Momentum Parameters')
 flags.DEFINE_string('sensing_type', default='gaussian', help='sensing type')
 
 FLAGS = flags.FLAGS
@@ -154,265 +154,281 @@ if __name__ == '__main__':
         free_GPU_idx=get_freer_gpu()
         ch.cuda.set_device(free_GPU_idx)
         print('[INFO] using cuda device ', free_GPU_idx)
-
-    if FLAGS.max_evals is None:
-        if (FLAGS.dataset == 'mnist' or 
-                FLAGS.dataset == 'cifar10'):
-            FLAGS.max_evals = 3000
-        elif FLAGS.dataset == 'ImageNet':
-            FLAGS.max_evals = 15000
-    
-    random.seed(FLAGS.seed)
-    np.random.seed(FLAGS.seed)
-
-    # Initialise list to save the results
-    list_attack = []
-    single_output = False # Need this to deal wiht the different net for non adversary
-                          # trained net with imagenet
-    # load network
-    if FLAGS.dataset == "mnist":
-        if FLAGS.Adversary_trained:
-            data, model = MNIST(), MNISTModel(main_dir + "/Models/mnist-distilled-100", sess, use_log)
-        else:
-            data, model = MNIST(), MNISTModel(main_dir + "/Models/mnist", sess, use_log)
+    with ch.no_grad():
+        if FLAGS.max_evals is None:
+            if (FLAGS.dataset == 'mnist' or 
+                    FLAGS.dataset == 'cifar10'):
+                FLAGS.max_evals = 3000
+            elif FLAGS.dataset == 'ImageNet':
+                FLAGS.max_evals = 15000
         
-        if FLAGS.eps is None:
-            epsilons = []
-        else:
-            epsilons = FLAGS.eps
+        random.seed(FLAGS.seed)
+        np.random.seed(FLAGS.seed)
 
-    elif FLAGS.dataset == "cifar10":
-        ds = CIFAR_robustness('./Data/CIFAR-10')
-        data = CIFAR()
-        if FLAGS.Adversary_trained:
-            model,_ = make_and_restore_model(arch='resnet50', dataset=ds, 
-                                    resume_path='./Models/cifar_robust.pt',
-                                    parallel=False)
-        else:
-            model,_ = make_and_restore_model(arch='resnet50', dataset=ds, 
-                                    resume_path='./Models/cifar_nat.pt',
-                                    parallel=False)
-            
-        if FLAGS.eps is None:
-            epsilons = [0.01, 0.005]
-        else:
-            epsilons = [FLAGS.eps]
-
-    elif FLAGS.dataset == "ImageNet":
-        ds = Imagenet_robustness('./Data/ImageNet/images')
-        data = ImageNet('', dimension=299)
-        if FLAGS.Adversary_trained:
-            model,_ = make_and_restore_model(arch='resnet50', dataset=ds, 
-                                    resume_path='./Models/imagenet_linf_8.pt',
-                                    parallel=False)
-        else:
-            model = models_ch.resnet50(pretrained=True)
-            single_output=True
-        
-        if FLAGS.eps is None:
-            if not FLAGS.Adversary_trained:
-                epsilons = [0.01, 0.1]
-            else:
-                epsilons = [0.02]
-        else:
-            epsilons = [FLAGS.eps]
-    
-    if ch.cuda.is_available():
-        model.eval()
-        model.to('cuda')
-        print('[INFO] Using Cuda')
-        model = wrapper_model(model.float(), FLAGS.attack, single_output, cuda=True)
-    else:
-        model.eval()
-        ch.set_num_threads(8)
-        model = wrapper_model(model.float(), FLAGS.attack, single_output)
-    
-    
-    for eps in epsilons:
+        # Initialise list to save the results
         list_attack = []
+        single_output = False # Need this to deal wiht the different net for non adversary
+                            # trained net with imagenet
+        # load network
+        if FLAGS.dataset == "mnist":
+            if FLAGS.Adversary_trained:
+                data, model = MNIST(), MNISTModel(main_dir + "/Models/mnist-distilled-100", sess, use_log)
+            else:
+                data, model = MNIST(), MNISTModel(main_dir + "/Models/mnist", sess, use_log)
+            
+            if FLAGS.eps is None:
+                epsilons = []
+            else:
+                epsilons = FLAGS.eps
 
-        FLAGS.eps=eps
-        
-        # loading the data
-        all_inputs, all_targets, all_labels = generate_data(data, dataset=FLAGS.dataset,
-                                    samples=FLAGS.test_size, targeted=True,
-                                    start=0)
+        elif FLAGS.dataset == "cifar10":
+            ds = CIFAR_robustness('./Data/CIFAR-10')
+            data = CIFAR()
+            if FLAGS.Adversary_trained:
+                model,_ = make_and_restore_model(arch='resnet50', dataset=ds, 
+                                        resume_path='./Models/cifar_robust.pt',
+                                        parallel=False)
+            else:
+                model,_ = make_and_restore_model(arch='resnet50', dataset=ds, 
+                                        resume_path='./Models/cifar_nat.pt',
+                                        parallel=False)
+                
+            if FLAGS.eps is None:
+                epsilons = [0.01, 0.005]
+            else:
+                epsilons = [FLAGS.eps]
 
-        # Set Loading and Saving directories
-        if FLAGS.dataset == 'mnist':
-            saving_dir = './Results/MNIST/'
-        elif FLAGS.dataset == 'cifar10':
-            saving_dir = './Results/CIFAR/'
-        elif FLAGS.dataset == 'ImageNet':
-            saving_dir = './Results/Imagenet/'
-        
-        if FLAGS.attack == 'boby':
-            if FLAGS.batch_size is None:
-                FLAGS.batch_size = 20
-            saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
-                                '_interpolation_' + FLAGS.interpolation +
-                                '_eps_'+str(FLAGS.eps) +
-                                '_max_eval_'+ str(FLAGS.max_evals) + 
-                                '_n_channels_' + str(FLAGS.n_channels) + 
-                                '_over_' + str(FLAGS.over) + 
-                                '_max_f_' + str(FLAGS.max_f) + 
-                                '_rounding_' + str(FLAGS.rounding) + 
-                                '_subspace_attack_' + str(FLAGS.subspace_attack) +
-                                '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
-                                FLAGS.description + '.txt')  
-        elif FLAGS.attack == 'combi':
-            if FLAGS.batch_size is None:
-                FLAGS.batch_size = 64
-            saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
-                                '_eps_'+str(FLAGS.eps) +
-                                '_max_eval_'+ str(FLAGS.max_evals) + 
-                                '_max_iters_' + str(FLAGS.max_iters) + 
-                                '_block_size_' + str(FLAGS.block_size) +
-                                '_batch_size_' + str(FLAGS.batch_size) +
-                                '_no_hier_' + str(FLAGS.no_hier) + 
-                                '_subspace_attack_' + str(FLAGS.subspace_attack) +
-                                '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
-                                FLAGS.description + '.txt')  
-        elif FLAGS.attack == 'square':
-            if FLAGS.p_init is None:
-                if FLAGS.dataset == 'ImageNet':
-                    FLAGS.p_init = 0.01
+        elif FLAGS.dataset == "ImageNet":
+            ds = Imagenet_robustness('./Data/ImagNet/images')
+            data = ImageNet('', dimension=299)
+            if FLAGS.Adversary_trained:
+                model,_ = make_and_restore_model(arch='resnet50', dataset=ds, 
+                                        resume_path='./Models/imagenet_linf_8.pt',
+                                        parallel=False)
+            else:
+                model = models_ch.resnet50(pretrained=True)
+                single_output=True
+            
+            if FLAGS.eps is None:
+                if not FLAGS.Adversary_trained:
+                    epsilons = [0.01, 0.1]
                 else:
-                    FLAGS.p_init = 0.1
-
-            saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
-                                '_eps_'+str(FLAGS.eps) +
-                                '_max_eval_'+ str(FLAGS.max_evals) + 
-                                '_p_init_' + str(FLAGS.p_init) +
-                                '_subspace_attack_' + str(FLAGS.subspace_attack) +
-                                '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
-                                FLAGS.description + '.txt')  
-        elif FLAGS.attack == 'gene':
-            saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
-                                '_eps_'+str(FLAGS.eps) +
-                                '_max_eval_'+ str(FLAGS.max_evals) + 
-                                '_pop_size_'+ str(FLAGS.pop_size) +
-                                '_mutation_rate_'+ str(FLAGS.mutation_rate) +
-                                '_alpha_'+ str(FLAGS.alpha) +
-                                '_resize_dim_'+ str(FLAGS.resize_dim) +
-                                '_adaptive_'+ str(FLAGS.adaptive) +
-                                '_subspace_attack_' + str(FLAGS.subspace_attack) +
-                                '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
-                                FLAGS.description + '.txt')  
-        elif FLAGS.attack == 'FW':
-            saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
-                                '_eps_'+str(FLAGS.eps) +
-                                '_max_eval_'+ str(FLAGS.max_evals) + 
-                                '_att_iter_'+ str(FLAGS.att_iter) +
-                                '_grad_est_batch_size_' + str(FLAGS.grad_est_batch_size) +
-                                '_l_r_'+str(FLAGS.l_r)+
-                                '_delta_'+str(FLAGS.delta)+
-                                '_beat1_'+str(FLAGS.beta1)+
-                                '_sensing_type_'+str(FLAGS.sensing_type)+
-                                '_subspace_attack_' + str(FLAGS.subspace_attack) +
-                                '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
-                                FLAGS.description + '.txt')  
+                    epsilons = [0.02]
+            else:
+                epsilons = [FLAGS.eps]
         
-        # Loading the previous results obtained with the same saving directory
-        already_done = 0
-        # if we are not saving, i.e. doing a test, we want to start from the same image
-        if FLAGS.save: 
-            if os.path.exists(saving_name):
-                if os.path.getsize(saving_name)>0:
-                    with open(saving_name, "rb") as fp:
-                        list_attack = pickle.load(fp)
-                    already_done = len(list_attack)
+        if ch.cuda.is_available():
+            model.eval()
+            model.to('cuda')
+            print('[INFO] Using Cuda')
+            model = wrapper_model(model.float(), FLAGS.attack, single_output, cuda=True)
+        else:
+            model.eval()
+            ch.set_num_threads(8)
+            model = wrapper_model(model.float(), FLAGS.attack, single_output)
         
-            if already_done>0:
-                print(already_done,'attacks')
-                found = False
-                # set the label and target of the image that has been last attacked
-                lab = list_attack[-1][2]
-                tar = list_attack[-1][3] 
-                # iterate throught the data to find at what point we are
-                while not found:
-                    # print(all_labels[already_done-1:already_done],all_targets[already_done-1:already_done],
-                    #      ' instead of ', lab, tar)
-                    try:
-                        lab_ = np.argmax(all_labels[already_done-1:already_done])
-                        tar_ = np.argmax(all_targets[already_done-1:already_done])
-                    except:
-                        already_done = 0
-
-                    already_done +=1
-                    if lab == lab_ and tar==tar_:
-                        found = True
-                        already_done -= 1
         
-        print('[EXPERIMENTAL SETUP] Attacking', FLAGS.test_size, 'test images with ', FLAGS.eps,' energy')
-        print('                    ', already_done, ' attacks have already been conducted.')
-        
-        for i in range(already_done,FLAGS.test_size):
-            inputs = all_inputs[i:i+1]
-            if FLAGS.attack == 'combi':
-                inputs = inputs[0]
-            targets = all_targets[i:i+1]
-            labels = all_labels[i:i+1]        
+        for eps in epsilons:
+            list_attack = []
 
-            print('[L1] Image of class ',np.argmax(labels),' targeted to ', np.argmax(targets),'.')
-
-            original_predict = model.predict(inputs)
-            original_predict = np.squeeze(original_predict)
-            original_prob = np.sort(original_predict)
-            original_class = np.argsort(original_predict)
-            if original_class[-1] != np.argmax(labels):
-                print("skip wrongly classified image no. {}, original class {}, classified as {}".format(
-                                    i, np.argmax(labels), original_class[-1]))
-                continue
-
-            loss_func = wrapper_loss(FLAGS.attack, targets, model)
-            if FLAGS.attack=='boby':
-                attack = BlackBox_BOBYQA(loss_func, batch_size=FLAGS.batch_size ,
-                                        interpolation = FLAGS.interpolation,
-                                        n_channels_input=FLAGS.n_channels,
-                                        print_every=FLAGS.print_every, use_resize=FLAGS.use_resize, 
-                                        eps=FLAGS.eps, max_eval=FLAGS.max_evals,
-                                        over=FLAGS.over, rounding=FLAGS.rounding,
-                                        max_f=FLAGS.max_f, subspace_attack=FLAGS.subspace_attack,
-                                        subspace_dim=FLAGS.subspace_dimension)
-
-                result = attack.attack_batch(inputs, targets)
-            elif FLAGS.attack=='combi':
-                result = ParsimoniousAttack(loss_func, inputs, 
-                                            np.argmax(targets[0]), FLAGS)
-            elif FLAGS.attack=='square':
-                result = square_attack_linf(model=model, x=inputs, 
-                                        y=np.array(targets[0], dtype=int), 
-                                        eps = FLAGS.eps, n_iters=FLAGS.max_evals, 
-                                        p_init=FLAGS.p_init, targeted=True, 
-                                        loss_type='cross_entropy', 
-                                        print_every=FLAGS.print_every,subspace_attack=FLAGS.subspace_attack,
-                                        subspace_dim=FLAGS.subspace_dimension)
-            elif FLAGS.attack=='gene':
-                attack = GenAttack2(model=model, pop_size=FLAGS.pop_size, mutation_rate=FLAGS.mutation_rate,
-                                    eps=FLAGS.eps, max_evals=FLAGS.max_evals , alpha=FLAGS.alpha,
-                                    resize_dim=FLAGS.resize_dim, adaptive=FLAGS.adaptive, 
-                                    num_classes=len(targets[0]), input_dim=inputs.shape[1])
-                result = attack.attack(inputs, np.argmax(targets[0]))
-            elif FLAGS.attack=='FW':
-                attack = FW_black(loss_f=loss_func, att_iter=10000, grad_est_batch_size=25, eps=FLAGS.eps,
-                    lr=0.01, delta=0.01, sensing_type='gaussian', q_limit=FLAGS.max_evals, beta1=0.99)
-                result = attack.attack(inputs, np.argmax(targets[0]))
-                                        
-
-            adv, eval_costs, summary, Success = result
+            FLAGS.eps=eps
             
-            adversarial_predict = model.predict(adv)
-            adversarial_predict = np.squeeze(adversarial_predict)
-            adversarial_prob = np.sort(adversarial_predict)
-            adversarial_class = np.argsort(adversarial_predict)
+            # loading the data
+            all_inputs, all_targets, all_labels = generate_data(data, dataset=FLAGS.dataset,
+                                        samples=FLAGS.test_size, targeted=True,
+                                        start=0)
 
-            list_attack.append([eval_costs, adversarial_predict,
-                            np.argmax(labels), np.argmax(targets)])
+            # Set Loading and Saving directories
+            if FLAGS.dataset == 'mnist':
+                saving_dir = './Results/MNIST/'
+            elif FLAGS.dataset == 'cifar10':
+                saving_dir = './Results/CIFAR/'
+            elif FLAGS.dataset == 'ImageNet':
+                saving_dir = './Results/Imagenet/'
             
-            print("[STATS][L1] no={}, success: {}, prev_class = {}, new_class = {}".format(i, Success, original_class[-1], adversarial_class[-1]))
-            sys.stdout.flush()
+            if FLAGS.attack == 'boby':
+                if FLAGS.batch_size is None:
+                    FLAGS.batch_size = 20
+                saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
+                                    '_interpolation_' + FLAGS.interpolation +
+                                    '_eps_'+str(FLAGS.eps) +
+                                    '_max_eval_'+ str(FLAGS.max_evals) + 
+                                    '_n_channels_' + str(FLAGS.n_channels) + 
+                                    '_over_' + str(FLAGS.over) + 
+                                    '_max_f_' + str(FLAGS.max_f) + 
+                                    '_rounding_' + str(FLAGS.rounding) + 
+                                    '_subspace_attack_' + str(FLAGS.subspace_attack) +
+                                    '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
+                                    FLAGS.description + '.txt')  
+            elif FLAGS.attack == 'combi':
+                if FLAGS.batch_size is None:
+                    FLAGS.batch_size = 64
+                saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
+                                    '_eps_'+str(FLAGS.eps) +
+                                    '_max_eval_'+ str(FLAGS.max_evals) + 
+                                    '_max_iters_' + str(FLAGS.max_iters) + 
+                                    '_block_size_' + str(FLAGS.block_size) +
+                                    '_batch_size_' + str(FLAGS.batch_size) +
+                                    '_no_hier_' + str(FLAGS.no_hier) + 
+                                    '_subspace_attack_' + str(FLAGS.subspace_attack) +
+                                    '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
+                                    FLAGS.description + '.txt')  
+            elif FLAGS.attack == 'square':
+                if FLAGS.p_init is None:
+                    if FLAGS.dataset == 'ImageNet':
+                        FLAGS.p_init = 0.01
+                    else:
+                        FLAGS.p_init = 0.1
 
-            if FLAGS.save:
-                with open(saving_name , "wb") as fp:
-                        pickle.dump(list_attack, fp)
+                saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
+                                    '_eps_'+str(FLAGS.eps) +
+                                    '_max_eval_'+ str(FLAGS.max_evals) + 
+                                    '_p_init_' + str(FLAGS.p_init) +
+                                    '_subspace_attack_' + str(FLAGS.subspace_attack) +
+                                    '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
+                                    FLAGS.description + '.txt')  
+            elif FLAGS.attack == 'gene':
+                saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
+                                    '_eps_'+str(FLAGS.eps) +
+                                    '_max_eval_'+ str(FLAGS.max_evals) + 
+                                    '_pop_size_'+ str(FLAGS.pop_size) +
+                                    '_mutation_rate_'+ str(FLAGS.mutation_rate) +
+                                    '_alpha_'+ str(FLAGS.alpha) +
+                                    '_resize_dim_'+ str(FLAGS.resize_dim) +
+                                    '_adaptive_'+ str(FLAGS.adaptive) +
+                                    '_subspace_attack_' + str(FLAGS.subspace_attack) +
+                                    '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
+                                    FLAGS.description + '.txt')  
+            elif FLAGS.attack == 'FW':
+                if FLAGS.l_r is None:
+                    FLAGS.l_r = 0.8
+                if FLAGS.beta1 is None:
+                    if FLAGS.attack == 'ImageNet':
+                        FLAGS.beta1 = 0.999
+                    else:
+                        FLAGS.beta1 = 0.99
+                
+                saving_name = (saving_dir+FLAGS.attack +'_adversary_' + str(FLAGS.Adversary_trained) +
+                                    '_eps_'+str(FLAGS.eps) +
+                                    '_max_eval_'+ str(FLAGS.max_evals) + 
+                                    '_att_iter_'+ str(FLAGS.att_iter) +
+                                    '_grad_est_batch_size_' + str(FLAGS.grad_est_batch_size) +
+                                    '_l_r_'+str(FLAGS.l_r)+
+                                    '_delta_'+str(FLAGS.delta)+
+                                    '_beat1_'+str(FLAGS.beta1)+
+                                    '_sensing_type_'+str(FLAGS.sensing_type)+
+                                    '_subspace_attack_' + str(FLAGS.subspace_attack) +
+                                    '_subspace_dimension_' + str(FLAGS.subspace_dimension) +
+                                    FLAGS.description + '.txt')  
+            
+            # Loading the previous results obtained with the same saving directory
+            already_done = 0
+            # if we are not saving, i.e. doing a test, we want to start from the same image
+            if FLAGS.save: 
+                if os.path.exists(saving_name):
+                    if os.path.getsize(saving_name)>0:
+                        with open(saving_name, "rb") as fp:
+                            list_attack = pickle.load(fp)
+                        already_done = len(list_attack)
+            
+                if already_done>0:
+                    print(already_done,'attacks')
+                    found = False
+                    # set the label and target of the image that has been last attacked
+                    lab = list_attack[-1][2]
+                    tar = list_attack[-1][3] 
+                    # iterate throught the data to find at what point we are
+                    while not found:
+                        # print(all_labels[already_done-1:already_done],all_targets[already_done-1:already_done],
+                        #      ' instead of ', lab, tar)
+                        try:
+                            lab_ = np.argmax(all_labels[already_done-1:already_done])
+                            tar_ = np.argmax(all_targets[already_done-1:already_done])
+                        except:
+                            already_done = 0
+
+                        already_done +=1
+                        if lab == lab_ and tar==tar_:
+                            found = True
+                            already_done -= 1
+                        
+
+                        if already_done==398:
+                            print('ERROR LOADING')
+                            found=True
+                            break
+
+            
+            print('[EXPERIMENTAL SETUP] Attacking', FLAGS.test_size, 'test images with ', FLAGS.eps,' energy')
+            print('                    ', already_done, ' attacks have already been conducted.')
+            
+            for i in range(already_done,FLAGS.test_size):
+                inputs = all_inputs[i:i+1]
+                if FLAGS.attack == 'combi':
+                    inputs = inputs[0]
+                targets = all_targets[i:i+1]
+                labels = all_labels[i:i+1]        
+
+                print('[L1] Image of class ',np.argmax(labels),' targeted to ', np.argmax(targets),'.')
+
+                original_predict = model.predict(inputs)
+                original_predict = np.squeeze(original_predict)
+                original_prob = np.sort(original_predict)
+                original_class = np.argsort(original_predict)
+                if original_class[-1] != np.argmax(labels):
+                    print("skip wrongly classified image no. {}, original class {}, classified as {}".format(
+                                        i, np.argmax(labels), original_class[-1]))
+                    continue
+
+                loss_func = wrapper_loss(FLAGS.attack, targets, model)
+                if FLAGS.attack=='boby':
+                    attack = BlackBox_BOBYQA(loss_func, batch_size=FLAGS.batch_size ,
+                                            interpolation = FLAGS.interpolation,
+                                            n_channels_input=FLAGS.n_channels,
+                                            print_every=FLAGS.print_every, use_resize=FLAGS.use_resize, 
+                                            eps=FLAGS.eps, max_eval=FLAGS.max_evals,
+                                            over=FLAGS.over, rounding=FLAGS.rounding,
+                                            max_f=FLAGS.max_f, subspace_attack=FLAGS.subspace_attack,
+                                            subspace_dim=FLAGS.subspace_dimension)
+
+                    result = attack.attack_batch(inputs, targets)
+                elif FLAGS.attack=='combi':
+                    result = ParsimoniousAttack(loss_func, inputs, 
+                                                np.argmax(targets[0]), FLAGS)
+                elif FLAGS.attack=='square':
+                    result = square_attack_linf(model=model, x=inputs, 
+                                            y=np.array(targets[0], dtype=int), 
+                                            eps = FLAGS.eps, n_iters=FLAGS.max_evals, 
+                                            p_init=FLAGS.p_init, targeted=True, 
+                                            loss_type='cross_entropy', 
+                                            print_every=FLAGS.print_every,subspace_attack=FLAGS.subspace_attack,
+                                            subspace_dim=FLAGS.subspace_dimension)
+                elif FLAGS.attack=='gene':
+                    attack = GenAttack2(model=model, pop_size=FLAGS.pop_size, mutation_rate=FLAGS.mutation_rate,
+                                        eps=FLAGS.eps, max_evals=FLAGS.max_evals , alpha=FLAGS.alpha,
+                                        resize_dim=FLAGS.resize_dim, adaptive=FLAGS.adaptive, 
+                                        num_classes=len(targets[0]), input_dim=inputs.shape[1])
+                    result = attack.attack(inputs, np.argmax(targets[0]))
+                elif FLAGS.attack=='FW':
+                    attack = FW_black(loss_f=loss_func, att_iter=FLAGS.att_iter, grad_est_batch_size=FLAGS.grad_est_batch_size,
+                        eps=FLAGS.eps, lr=FLAGS.l_r, delta=FLAGS.delta, sensing_type=FLAGS.sensing_type, 
+                        q_limit=FLAGS.max_evals, beta1=FLAGS.beta1)
+                    result = attack.attack(inputs, np.argmax(targets[0]))
+                                            
+
+                adv, eval_costs, summary, Success = result
+                
+                adversarial_predict = model.predict(adv)
+                adversarial_predict = np.squeeze(adversarial_predict)
+                adversarial_prob = np.sort(adversarial_predict)
+                adversarial_class = np.argsort(adversarial_predict)
+
+                list_attack.append([eval_costs, adversarial_predict,
+                                np.argmax(labels), np.argmax(targets)])
+                
+                print("[STATS][L1] no={}, success: {}, prev_class = {}, new_class = {}".format(i, Success, original_class[-1], adversarial_class[-1]))
+                sys.stdout.flush()
+
+                if FLAGS.save:
+                    with open(saving_name , "wb") as fp:
+                            pickle.dump(list_attack, fp)

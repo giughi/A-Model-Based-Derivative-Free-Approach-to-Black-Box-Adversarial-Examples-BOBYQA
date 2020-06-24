@@ -13,7 +13,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
 
 import tensorflow as tf   
-from Setups.Data_and_Model.setup_inception_2 import ImageNet, InceptionModel
+from Setups.Data_and_Model.setup_inception_tensorflow import ImageNet, InceptionModel
 from Attack_Code.Square_Attack import utils
 from Attack_Code.GenAttack import utils as utils_2
 import pickle
@@ -92,7 +92,6 @@ def square_attack_linf(sess, model, x, y, eps, n_iters, p_init,targeted):
         
     # Vertical stripes initialization
     x_best = np.clip(x + np.random.choice([-eps, eps], size=[x.shape[0], 1, w, c]), min_val, max_val)
-    print(x_best.shape)
     logits = sess.run(test_pred, feed_dict={test_in: x_best})[0]
     margin_min = loss(y[0], logits,targeted)
     n_queries = np.ones(x.shape[0])  # ones because we have already used 1 query
@@ -207,8 +206,11 @@ if __name__ == '__main__':
             K.clear_session()
             tf.GraphDef().Clear()
 
-            session_conf = tf.ConfigProto(intra_op_parallelism_threads=8,
-                                          inter_op_parallelism_threads=8)
+            # session_conf = tf.ConfigProto(intra_op_parallelism_threads=8,
+            #                               inter_op_parallelism_threads=8)
+
+            session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list= '0', 
+                                            per_process_gpu_memory_fraction=0.20))
 
             with tf.Session(config=session_conf) as sess:
                 tf.set_random_seed(FLAGS.seed)

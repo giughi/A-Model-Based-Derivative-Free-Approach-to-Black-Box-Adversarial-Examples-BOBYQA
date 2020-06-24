@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from itertools import chain
 
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
-
+from utils_uploading import *
 
 def computation_SR(results, max_queries):
     """
@@ -78,29 +78,39 @@ def generating_SR_plot(epsilons, SR_list, epsilons_adv, SR_list_adv, name_arrays
     normal_ones = []
     adv_ones = []
     for i in range(n):
-        ax.semilogx(epsilons,M[i,:],'o-',color=colors[i],lw=2)
+        non_zero_index = find_non_zero_index(M[i,:])
+        eps_array = np.array(epsilons)
+        # print(eps_array[[0,1]])#[0,non_zero_index])
+        # print(M[i,non_zero_index])
+        ax.loglog(eps_array[non_zero_index],M[i,non_zero_index],'o-',color=colors[i],lw=2)
         normal_ones.append(ax.lines[-1])
         if args.both:
-            for i in range(n2):
-                ax.semilogx(epsilons_adv,M2[i,:],'x--',color=colors[i],lw=2)
+            for j in range(n2):
+                non_zero_index = find_non_zero_index(M2[j,:])
+                eps_array_adv = np.array(epsilons_adv)
+                ax.loglog(eps_array_adv[non_zero_index],M2[j,non_zero_index],'x--',color=colors[j],lw=2)
                 adv_ones.append(ax.lines[-1])
     
 
     if args.legend:
-        if not args.both:
-            plt.legend(name_arrays,loc=loc, fontsize=fontSize, framealpha=0.4)
-        else:
-            l1 = plt.legend(normal_ones,['','','','',''],loc=1, fontsize=16, framealpha=0.1,ncol=1,
-                bbox_to_anchor=(0.55,0.5))
-            l2 = plt.legend(adv_ones,name_arrays,loc=1, fontsize=16, framealpha=0.1,ncol=1, 
-                bbox_to_anchor=(1,0.5))
+        # if not args.both:
+        #     plt.legend(name_arrays,loc=loc, fontsize=fontSize, framealpha=0.4)
+        # else:
+        l1 = plt.legend(normal_ones,['','','','',''],loc=1, fontsize=16, framealpha=0.1,ncol=1,
+            bbox_to_anchor=(1.25,0.5))
+        l2 = plt.legend(adv_ones,name_arrays,loc=1, fontsize=16, framealpha=0.1,ncol=1, 
+            bbox_to_anchor=(1.7,0.5))
 
-            plt.gca().add_artist(l1)
-            plt.text(1100/3000*max_eval,0.48,'Norm', fontsize=16)
-            plt.text(1600/3000*max_eval,0.48,'Adv', fontsize=16)
+        plt.gca().add_artist(l1)
+        if args.Data=='CIFAR':
+            plt.text(0.23,0.045,'Norm', fontsize=16)
+            plt.text(0.42,0.045,'Adv', fontsize=16)
+        else:
+            plt.text(0.13,0.045,'Norm', fontsize=16)
+            plt.text(0.205,0.045,'Adv', fontsize=16)
 
     plt.xlabel(r"$\epsilon_\infty$",fontsize=18)
-    plt.ylabel('CDF',fontsize=fontSize)
+    plt.ylabel('SR',fontsize=fontSize)
     # plt.axis([0, max_eval, 0 ,1],fontsize=fontSize)
     
     fig.savefig(title,bbox_inches='tight')

@@ -102,7 +102,7 @@ def generating_cumulative_blocks(list_arrays, list_arrays_both, name_arrays,
             plt.plot(r,M[i,:],color=colors[i],lw=2)
         plt.xlabel('Queries',fontsize=fontSize-dimni)
         plt.ylabel('CDF',fontsize=fontSize-dimni)
-        plt.axis([max_eval*0.75, max_eval, 0 ,0.21],fontsize=fontSize-dimni)
+        plt.axis([max_eval*0.25, max_eval, 0 ,0.21],fontsize=fontSize-dimni)
         plt.xticks(fontsize=fontSize-dimni)
         plt.yticks(fontsize=fontSize-dimni)
 

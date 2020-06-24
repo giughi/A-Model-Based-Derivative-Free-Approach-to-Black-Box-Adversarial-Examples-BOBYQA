@@ -25,27 +25,28 @@ def uploading_name(attack, args):
     """
     if attack=='boby':
         name = (main_dir + '/Results/'+str(args.Data)+'/boby_adversary_'+str(args.Adversary)+'_interpolation_block_eps_'
-               +str(args.eps)+'_max_eval_3000_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_'
+               +str(args.eps)+'_max_eval_'+str(args.max_iter)+'_n_channels_3_over_over_max_f_1.3_rounding_True_subspace_attack_'
                +str(args.subspace_attack)+'_subspace_dimension_'+str(args.sub_dim)+'.txt')
     elif attack =='combi':
         name = (main_dir+'/Results/'+str(args.Data)+'/combi_adversary_'+str(args.Adversary)+'_eps_'+str(args.eps)+
-                '_max_eval_3000_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_'
+                '_max_eval_'+str(args.max_iter)+'_max_iters_1_block_size_128_batch_size_64_no_hier_False_subspace_attack_'
                 +str(args.subspace_attack)+ '_subspace_dimension_'+str(args.sub_dim)+'.txt')
     elif attack == 'square':
         name = (main_dir+'/Results/'+str(args.Data)+'/square_adversary_'+str(args.Adversary)+'_eps_'+str(args.eps)+
-                '_max_eval_3000_p_init_0.1_subspace_attack_'+str(args.subspace_attack)+'_subspace_dimension_'
+                '_max_eval_'+str(args.max_iter)+'_p_init_'+str(args.p_init)+'_subspace_attack_'+str(args.subspace_attack)+'_subspace_dimension_'
                 +str(args.sub_dim)+'.txt')
     elif attack == 'gene':
         name = (main_dir+'/Results/'+str(args.Data)+'/gene_adversary_' + str(args.Adversary) + '_eps_'+str(args.eps) +
-                '_max_eval_3000_pop_size_6_mutation_rate_0.005_alpha_0.2' +
+                '_max_eval_'+str(args.max_iter)+'_pop_size_6_mutation_rate_0.005_alpha_0.2' +
                 '_resize_dim_96_adaptive_True' +
                 '_subspace_attack_' + str(args.subspace_attack) +
                 '_subspace_dimension_' + str(args.sub_dim) +
                 '.txt')
     elif attack == 'FW':
+            
         name = (main_dir+'/Results/'+str(args.Data)+'/FW_adversary_' + str(args.Adversary) +
                 '_eps_'+str(args.eps) +
-                '_max_eval_3000_att_iter_10000_grad_est_batch_size_' +
+                '_max_eval_'+str(args.max_iter)+'_att_iter_10000_grad_est_batch_size_' +
                 '25_l_r_0.01_delta_0.01_beat1_0.99_sensing_type_gaussian'+
                 '_subspace_attack_' + str(args.subspace_attack) +
                 '_subspace_dimension_' + str(args.sub_dim) + 
@@ -91,3 +92,10 @@ def map_to_complete_names(list_available_attacks, both):
             saving_attacks_names.append('Frank-Wolfe')
     return saving_attacks_names
             
+def find_non_zero_index(vec):
+    n = len(vec)
+    indexes = []
+    for i in range(n):
+        if vec[i]>0:
+            indexes.append(int(i))
+    return indexes

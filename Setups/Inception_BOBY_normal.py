@@ -14,7 +14,7 @@ main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))
 
 import tensorflow as tf   
 from Attack_Code.BOBYQA.BOBYQA_Attack import BlackBox_BOBYQA
-from Setups.Data_and_Model.setup_inception_2 import ImageNet, InceptionModel
+from Setups.Data_and_Model.setup_inception_tensorflow import ImageNet, InceptionModel
 import pickle
 from keras import backend as K, regularizers
 import Attack_Code.GenAttack.utils as utils
@@ -58,6 +58,8 @@ if __name__ == '__main__':
                 attacks = pickle.load(fp)
                 already_done = len(attacks) + 1
     print('=====> Already done ', already_done)
+    # print('IS GPU AVAILABLE', tf.test.is_gpu_available())
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
     for ii in range(already_done, num_valid_images):
         # because of how Tensorflow1 works, we have to reset the session every time we do more than 
@@ -95,10 +97,13 @@ if __name__ == '__main__':
             K.clear_session()
             tf.GraphDef().Clear()
 
-            session_conf = tf.ConfigProto(intra_op_parallelism_threads=5,
-                                          inter_op_parallelism_threads=5)
+            # session_conf = tf.ConfigProto(intra_op_parallelism_threads=5,
+            #                               inter_op_parallelism_threads=5)
 
+            session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list= '1', 
+                                            per_process_gpu_memory_fraction=0.20))
             with tf.Session(config=session_conf) as sess:
+            # with tf.Session() as sess:
                 tf.set_random_seed(FLAGS.seed)
                 model = InceptionModel(sess, use_log=True)
                 test_in = tf.placeholder(tf.float32, (1, 299, 299, 3), 'x')
@@ -108,7 +113,7 @@ if __name__ == '__main__':
                 attack = BlackBox_BOBYQA(sess, model, batch_size=FLAGS.batch , max_iterations=10000,  
                                         confidence=0, targeted=True, use_resize=True, 
                                         L_inf=FLAGS.eps, max_eval=FLAGS.max_queries, print_every=1,
-                                        done_eval_costs=query_count, max_eval_internal=100, 
+                                        done_eval_costs=query_count, max_eval_internal=15000, 
                                         perturbed_img=perturbed_img, ord_domain=ord_domain, steps_done=steps_done,
                                         iteration_scale=iteration_scale,image0=img0, over=FLAGS.interp, 
                                         permutation=permutation)
