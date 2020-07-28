@@ -138,3 +138,19 @@ def print_table_data(list_normal, list_adv, names, max_queries):
               ", median:", np.median(successful_attacks), ", mean: ", np.mean(successful_attacks))
         print("*adve* Total Number:", len(list_adv[i]), ", SR:", len(successful_attacks_adv)/len(list_adv[i]), 
               ", median:", np.median(successful_attacks_adv), ", mean: ", np.mean(successful_attacks_adv))
+
+def print_data_at_query(list_normal, names, query):
+    """
+    Function to print the numerical results for each attack, at a specific query
+    """
+    # let's consider each case seaparetely
+    for i in range(len(names)):
+        attack = names[i]
+        #let's first consider the normally trained cases
+        successful_attacks = []
+        for j in range(len(list_normal[i])):
+            if list_normal[i][j] < query:
+                successful_attacks.append(list_normal[i][j])
+            
+        print("===Attack: ", attack)
+        print("*norm* Total Number:", len(list_normal[i]), ", CDF:", len(successful_attacks)/len(list_normal[i]))

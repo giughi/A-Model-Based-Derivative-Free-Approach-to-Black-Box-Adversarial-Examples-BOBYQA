@@ -99,3 +99,48 @@ def find_non_zero_index(vec):
         if vec[i]>0:
             indexes.append(int(i))
     return indexes
+
+
+
+
+# The following functions are relative to the sub-sampling plotting which relates to 
+# random, variance and ordered subsampling
+
+def uploading_name_sub(attack, args):
+    """
+    This returns the string of the directroy of where the attack results are saved
+    """
+    name = (main_dir + '/Results/'+str(args.Data)+'/SubSampling/'+attack+'_L_inf_'
+            +str(args.eps)+'.txt')
+    return name
+
+
+def import_results_sub(attack, args, both=False):
+    """
+    This function uploads the results relative to input attack and wtih the required args
+    """
+    name = uploading_name_sub(attack,args)
+
+    with open(name, "rb") as fp:
+        uploaded_results = pickle.load(fp)
+
+    result = []
+    for i in range(len(uploaded_results)):
+        result.append(uploaded_results[i][0])
+    
+    return result
+
+
+def map_to_complete_names_sub(list_available_attacks):
+    """
+    This function uploads the saving name of the actual attack on the image.
+    """
+    saving_attacks_names = []
+    for attack in list_available_attacks:
+        if attack=='dist':
+            saving_attacks_names.append('Variance')
+        if attack=='orde':
+            saving_attacks_names.append('Ordered')
+        if attack=='rand':
+            saving_attacks_names.append('Random')
+    return saving_attacks_names
