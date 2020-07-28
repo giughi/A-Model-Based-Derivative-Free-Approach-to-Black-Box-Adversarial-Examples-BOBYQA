@@ -65,18 +65,28 @@ def p_selection(p_init, it, n_iters):
 
     return p
 
-def loss(y, logits, targeted=True):
+def softmax_square(x):
+    e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
+    return e_x / e_x.sum(axis=0, keepdims=True)
+
+def loss(y, logits, targeted=True, cross_entropy=False):
         """ Implements the margin loss (difference between the correct and 2nd best class). """
         # print(len(y), len(logits))
-        if targeted:
-            targ_loss = logits[y]
-            preds_correct_class = np.max(logits)
-            diff = preds_correct_class  - targ_loss  # difference between the correct class and all other classes
-            return diff
-        else:
-            preds_correct_class = np.sort(logits)
-            diff = logits[y][0] - preds_correct_class[-2]  # difference between the correct class and all other classes
-            return np.array([diff])
+        if not cross_entropy:
+            if targeted:
+                targ_loss = logits[y]
+                preds_correct_class = np.max(logits)
+                diff = preds_correct_class  - targ_loss  # difference between the correct class and all other classes
+                return diff
+            else:
+                preds_correct_class = np.sort(logits)
+                diff = logits[y][0] - preds_correct_class[-2]  # difference between the correct class and all other classes
+                return np.array([diff])
+        else:            
+            probs = logits#softmax_square(logits)
+            loss_ = -np.log((probs*y).sum()+1e-10) + np.log(np.sum(probs)- (probs*y).sum() + 1e-10)
+            loss_ = loss_ * -1 if not targeted else loss_
+            return loss_.flatten()
 
 def square_attack_linf(sess, model, x, y, eps, n_iters, p_init,targeted):
     """ The Linf square attack """
@@ -94,6 +104,7 @@ def square_attack_linf(sess, model, x, y, eps, n_iters, p_init,targeted):
     x_best = np.clip(x + np.random.choice([-eps, eps], size=[x.shape[0], 1, w, c]), min_val, max_val)
     logits = sess.run(test_pred, feed_dict={test_in: x_best})[0]
     margin_min = loss(y[0], logits,targeted)
+    loss_min = loss(y[0], logits,targeted, cross_entropy=True)
     n_queries = np.ones(x.shape[0])  # ones because we have already used 1 query
 
     time_start = time.time()
@@ -101,7 +112,7 @@ def square_attack_linf(sess, model, x, y, eps, n_iters, p_init,targeted):
     for i_iter in range(n_iters - 1):
         idx_to_fool = margin_min > 0
         x_curr, x_best_curr = x, x_best
-        y_curr, margin_min_curr = y, margin_min
+        y_curr, margin_min_curr, loss_min_curr = y, margin_min, loss_min
         deltas = x_best_curr - x_curr
 
         p = p_selection(p_init, i_iter, n_iters)
@@ -124,21 +135,27 @@ def square_attack_linf(sess, model, x, y, eps, n_iters, p_init,targeted):
         x_new = np.clip(x_curr + deltas, min_val, max_val)
 
         logits = sess.run(test_pred, feed_dict={test_in: x_new})[0]
+        loss_val = loss(y[0], logits,targeted, cross_entropy=True)
         margin = loss(y_curr[0], logits,targeted)
         # print(margin)
-        idx_improved = margin < margin_min_curr
-        margin_min[idx_to_fool] = idx_improved * margin + ~idx_improved * margin_min_curr
+        idx_improved = loss_val < loss_min_curr #margin < margin_min_curr
+
+        loss_min = (idx_improved) * loss_val + (~idx_improved) * loss_min_curr
+        margin_min = idx_improved * margin + ~idx_improved * margin_min_curr
+        # margin_min[idx_to_fool] = idx_improved * margin + ~idx_improved * margin_min_curr
         idx_improved = np.reshape(idx_improved, [-1, *[1]*len(x.shape[:-1])])
-        x_best[idx_to_fool] = idx_improved * x_new + ~idx_improved * x_best_curr
-        n_queries[idx_to_fool] += 1
+        x_best = idx_improved * x_new + ~idx_improved * x_best_curr
+        n_queries += 1
+        # x_best[idx_to_fool] = idx_improved * x_new + ~idx_improved * x_best_curr
+        # n_queries[idx_to_fool] += 1
 
         # different metrics to keep track of
         acc = margin_min[0]
         # acc_corr = (margin_min > 0.0).mean()
         # mean_nq, mean_nq_ae, median_nq_ae = np.mean(n_queries), np.mean(n_queries[margin_min <= 0]), np.median(n_queries[margin_min <= 0])
         time_total = time.time() - time_start
-        print('[L1] {}: margin={}  (n_ex={}, eps={:.3f}, {:.2f}s)'.
-            format(i_iter+1, acc, x.shape[0], eps, time_total))
+        print('[L1] {}: loss ={:.3f}, margin={}  (n_ex={}, eps={:.3f}, {:.2f}s)'.
+            format(i_iter+1, loss_min[0] ,acc, x.shape[0], eps, time_total))
 
         if acc<=0:
             break
@@ -161,9 +178,9 @@ if __name__ == '__main__':
     log_querries = []
 #         logger = utils.ResultLogger(FLAGS.output_dir, FLAGS.flag_values_dict())
     
-    saving_dir = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'.txt'
+    saving_dir = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'_CE.txt'
     print(saving_dir)
-    saving_dir_full = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'.txt'
+    saving_dir_full = main_dir+'/Results/Imagenet/SQUA_'+str(FLAGS.eps)+'_CE.txt'
     already_done = 0
     if os.path.exists(saving_dir_full):
         if os.path.getsize(saving_dir_full)>0:
@@ -209,7 +226,7 @@ if __name__ == '__main__':
             # session_conf = tf.ConfigProto(intra_op_parallelism_threads=8,
             #                               inter_op_parallelism_threads=8)
 
-            session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list= '0', 
+            session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(visible_device_list= '2', 
                                             per_process_gpu_memory_fraction=0.20))
 
             with tf.Session(config=session_conf) as sess:

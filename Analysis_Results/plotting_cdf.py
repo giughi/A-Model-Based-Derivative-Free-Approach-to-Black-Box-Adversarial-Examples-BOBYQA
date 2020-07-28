@@ -79,8 +79,10 @@ list_available_attacks = []
 
 # Let's import the different results that we can achieve
 for attack in list_possible_attacks:
-
-    results = import_results(attack, args)
+    try:
+        results = import_results(attack, args)
+    except:
+        results = None
 
     if results is not None:
         list_available_results.append(results)
@@ -99,7 +101,7 @@ saving_title=(main_dir+'/Results/'+str(args.Data)+'/Plots/CDF_adversary_'+str(ar
             + args.title + '_sub_dim_' + str(args.sub_dim) + '_eps_' + str(args.eps) + '_both_' 
             + str(args.both) + '_legend_' + str(args.legend) +'_zoom_' +str(args.zoom) + '.pdf')
 
-# Let's print the results
+# Let's print the plots of the results
 generating_cumulative_blocks(list_available_results, 
                             list_available_results_adv, 
                             name_possible_attacks,
@@ -112,4 +114,8 @@ generating_cumulative_blocks(list_available_results,
                             both=args.both,
                             loc=args.loc);
 
-
+# Let's print the information the data used
+print_table_data(list_available_results, 
+                list_available_results_adv, 
+                name_possible_attacks,
+                max_queries,)

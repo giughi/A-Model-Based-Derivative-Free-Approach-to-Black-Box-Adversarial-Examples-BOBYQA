@@ -47,7 +47,7 @@ def uploading_name(attack, args):
         name = (main_dir+'/Results/'+str(args.Data)+'/FW_adversary_' + str(args.Adversary) +
                 '_eps_'+str(args.eps) +
                 '_max_eval_'+str(args.max_iter)+'_att_iter_10000_grad_est_batch_size_' +
-                '25_l_r_0.01_delta_0.01_beat1_0.99_sensing_type_gaussian'+
+                '25_l_r_0.8_delta_0.01_beat1_0.99_sensing_type_gaussian'+
                 '_subspace_attack_' + str(args.subspace_attack) +
                 '_subspace_dimension_' + str(args.sub_dim) + 
                 '.txt')

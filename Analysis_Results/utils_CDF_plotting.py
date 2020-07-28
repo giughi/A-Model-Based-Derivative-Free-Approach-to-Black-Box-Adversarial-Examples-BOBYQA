@@ -112,3 +112,29 @@ def generating_cumulative_blocks(list_arrays, list_arrays_both, name_arrays,
         
 
     return M
+
+def print_table_data(list_normal, list_adv, names, max_queries):
+    """
+    Function to print the numerical results for each attack, i.e. SR, median and mean queries 
+    in succesfull attacks
+    """
+    # let's consider each case seaparetely
+    for i in range(len(names)):
+        attack = names[i]
+        #let's first consider the normally trained cases
+        successful_attacks = []
+        for j in range(len(list_normal[i])):
+            if list_normal[i][j] < max_queries:
+                successful_attacks.append(list_normal[i][j])
+        
+        # and now the adversarial case
+        successful_attacks_adv = []
+        for j in range(len(list_adv[i])):
+            if list_adv[i][j] < max_queries:
+                successful_attacks_adv.append(list_adv[i][j])
+            
+        print("===Attack: ", attack)
+        print("*norm* Total Number:", len(list_normal[i]), ", SR:", len(successful_attacks)/len(list_normal[i]), 
+              ", median:", np.median(successful_attacks), ", mean: ", np.mean(successful_attacks))
+        print("*adve* Total Number:", len(list_adv[i]), ", SR:", len(successful_attacks_adv)/len(list_adv[i]), 
+              ", median:", np.median(successful_attacks_adv), ", mean: ", np.mean(successful_attacks_adv))

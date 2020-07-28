@@ -143,6 +143,8 @@ def wrapper_model(model, attack, single_output, cuda=False):
     if cuda:
         if attack =='boby':
             return Model_Class_boby(model,single_output)
+        if attack =='boby_random':
+            return Model_Class_boby(model,single_output)
         elif attack == 'combi':
             return Model_Class_combi(model,single_output)
         elif attack == 'square':
@@ -231,6 +233,8 @@ def softmax(x):
 class wrapper_loss():
     def __init__(self, attack,targets,model):
         if attack =='boby':
+            self.loss = lambda x,y,**kw: loss_func_boby(targets,model, x,y,**kw)
+        if attack =='boby_random':
             self.loss = lambda x,y,**kw: loss_func_boby(targets,model, x,y,**kw)
         elif attack == 'combi':
             self.loss = lambda x: loss_func_combi(x,targets,model)

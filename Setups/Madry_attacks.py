@@ -37,6 +37,7 @@ from Setups.Data_and_Model.wrapper_model_loss_f import wrapper_model, wrapper_lo
 
 from Attack_Code.MNIST_CIFAR_boby_gen import BlackBox
 from Attack_Code.BOBYQA.BOBYQA_Attack_Adversary_channels_2 import BlackBox_BOBYQA
+from Attack_Code.BOBYQA.BOBYQA_Attack_random_direction import BlackBox_BOBYQA_random_proj
 from Attack_Code.Combinatorial.attacks.parsimonious_attack_madry import ParsimoniousAttack
 from Attack_Code.Square_Attack.attack_madry import square_attack_linf
 from Attack_Code.GenAttack.genattack_tf2_PyTorch import GenAttack2
@@ -390,6 +391,15 @@ if __name__ == '__main__':
                                             over=FLAGS.over, rounding=FLAGS.rounding,
                                             max_f=FLAGS.max_f, subspace_attack=FLAGS.subspace_attack,
                                             subspace_dim=FLAGS.subspace_dimension)
+
+                    result = attack.attack_batch(inputs, targets)
+                if FLAGS.attack=='boby_random':
+                    attack = BlackBox_BOBYQA_random_proj(loss_func, batch_size=50 ,
+                                            n_channels_input=FLAGS.n_channels,
+                                            print_every=FLAGS.print_every,
+                                            eps=FLAGS.eps, max_eval=FLAGS.max_evals,
+                                            max_f=FLAGS.max_f, subspace_attack=FLAGS.subspace_attack,
+                                            subspace_dim=FLAGS.subspace_dimension, delta=FLAGS.delta)
 
                     result = attack.attack_batch(inputs, targets)
                 elif FLAGS.attack=='combi':

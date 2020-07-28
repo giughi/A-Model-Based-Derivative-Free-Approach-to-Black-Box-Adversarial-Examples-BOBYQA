@@ -68,6 +68,7 @@ if args.Data=='Imagenet':
     max_queries = 15000
 else:
     max_queries = 3000
+    args.max_iter=3000
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 main_dir = os.path.abspath(os.path.join(dir_path, os.pardir))

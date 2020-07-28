@@ -19,7 +19,7 @@ checkpoint_path_ = main_dir + '/Models/adv_inception_v3.ckpt'
 
 import tensorflow as tf   
 from Attack_Code.BOBYQA.BOBYQA_Attack_Adversary import BlackBox_BOBYQA
-from Setups.Data_and_Model.setup_inception_2 import ImageNet, InceptionModel
+from Setups.Data_and_Model.setup_inception_tensorflow import ImageNet, InceptionModel
 import pickle
 from keras import backend as K, regularizers
 import Attack_Code.GenAttack.utils as utils
